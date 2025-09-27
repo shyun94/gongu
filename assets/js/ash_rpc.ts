@@ -3,6 +3,31 @@
 
 
 
+export type UUID = string;
+
+// GonguGroupsGroup Schema
+export type GonguGroupsGroupResourceSchema = {
+  __type: "Resource";
+  __primitiveFields: "id" | "name" | "description" | "creatorId";
+  id: UUID;
+  name: string;
+  description: string | null;
+  creatorId: UUID;
+};
+
+
+
+// GonguGroupsGroupMembership Schema
+export type GonguGroupsGroupMembershipResourceSchema = {
+  __type: "Resource";
+  __primitiveFields: "id" | "userId" | "groupId" | "role" | "status" | "invitedById";
+  id: UUID;
+  userId: UUID;
+  groupId: UUID;
+  role: "admin" | "member";
+  status: "active" | "pending" | "inactive";
+  invitedById: UUID | null;
+};
 
 
 
@@ -12,7 +37,82 @@
 
 
 
+export type GonguGroupsGroupFilterInput = {
+  and?: Array<GonguGroupsGroupFilterInput>;
+  or?: Array<GonguGroupsGroupFilterInput>;
+  not?: Array<GonguGroupsGroupFilterInput>;
 
+  id?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  name?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  description?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  creatorId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+
+
+};
+export type GonguGroupsGroupMembershipFilterInput = {
+  and?: Array<GonguGroupsGroupMembershipFilterInput>;
+  or?: Array<GonguGroupsGroupMembershipFilterInput>;
+  not?: Array<GonguGroupsGroupMembershipFilterInput>;
+
+  id?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  userId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  groupId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  role?: {
+    eq?: "admin" | "member";
+    notEq?: "admin" | "member";
+    in?: Array<"admin" | "member">;
+  };
+
+  status?: {
+    eq?: "active" | "pending" | "inactive";
+    notEq?: "active" | "pending" | "inactive";
+    in?: Array<"active" | "pending" | "inactive">;
+  };
+
+  invitedById?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+
+
+};
 
 
 // Utility Types
@@ -182,5 +282,1388 @@ export function buildCSRFHeaders(headers: Record<string, string> = {}): Record<s
 
 
 
+export type ListGroupsFields = UnifiedFieldSelection<GonguGroupsGroupResourceSchema>[];
+
+type InferListGroupsResult<
+  Fields extends ListGroupsFields,
+> = {
+  results: Array<InferResult<GonguGroupsGroupResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsGroupResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type ListGroupsResult<Fields extends ListGroupsFields> = | { success: true; data: InferListGroupsResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function listGroups<Fields extends ListGroupsFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsGroupFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ListGroupsResult<Fields>> {
+  const payload = {
+    action: "list_groups",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ListGroupsResult<Fields>;
+}
+
+
+export type ValidateListGroupsResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateListGroups(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateListGroupsResult> {
+  const payload = {
+    action: "list_groups"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateListGroupsResult;
+}
+
+
+export type CreateGroupInput = {
+  name: string;
+  description?: string | null;
+};
+
+export type CreateGroupValidationErrors = {
+  name?: string[];
+  description?: string[];
+};
+
+export type CreateGroupFields = UnifiedFieldSelection<GonguGroupsGroupResourceSchema>[];
+
+type InferCreateGroupResult<
+  Fields extends CreateGroupFields,
+> = InferResult<GonguGroupsGroupResourceSchema, Fields>;
+
+export type CreateGroupResult<Fields extends CreateGroupFields> = | { success: true; data: InferCreateGroupResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function createGroup<Fields extends CreateGroupFields>(
+  config: {
+  input: CreateGroupInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<CreateGroupResult<Fields>> {
+  const payload = {
+    action: "create_group",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as CreateGroupResult<Fields>;
+}
+
+
+export type ValidateCreateGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateCreateGroup(
+  config: {
+  input: CreateGroupInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateCreateGroupResult> {
+  const payload = {
+    action: "create_group",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateCreateGroupResult;
+}
+
+
+export type GetGroupFields = UnifiedFieldSelection<GonguGroupsGroupResourceSchema>[];
+
+type InferGetGroupResult<
+  Fields extends GetGroupFields,
+> = {
+  results: Array<InferResult<GonguGroupsGroupResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsGroupResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type GetGroupResult<Fields extends GetGroupFields> = | { success: true; data: InferGetGroupResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function getGroup<Fields extends GetGroupFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsGroupFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<GetGroupResult<Fields>> {
+  const payload = {
+    action: "get_group",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as GetGroupResult<Fields>;
+}
+
+
+export type ValidateGetGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateGetGroup(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateGetGroupResult> {
+  const payload = {
+    action: "get_group"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateGetGroupResult;
+}
+
+
+export type UpdateGroupInput = {
+  name: string;
+  description?: string | null;
+};
+
+export type UpdateGroupValidationErrors = {
+  name?: string[];
+  description?: string[];
+};
+
+export type UpdateGroupFields = UnifiedFieldSelection<GonguGroupsGroupResourceSchema>[];
+
+type InferUpdateGroupResult<
+  Fields extends UpdateGroupFields,
+> = InferResult<GonguGroupsGroupResourceSchema, Fields>;
+
+export type UpdateGroupResult<Fields extends UpdateGroupFields> = | { success: true; data: InferUpdateGroupResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function updateGroup<Fields extends UpdateGroupFields>(
+  config: {
+  primaryKey: UUID;
+  input: UpdateGroupInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<UpdateGroupResult<Fields>> {
+  const payload = {
+    action: "update_group",
+    primaryKey: config.primaryKey,
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as UpdateGroupResult<Fields>;
+}
+
+
+export type ValidateUpdateGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateUpdateGroup(
+  config: {
+  primaryKey: string;
+  input: UpdateGroupInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateUpdateGroupResult> {
+  const payload = {
+    action: "update_group",
+    primaryKey: config.primaryKey,
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateUpdateGroupResult;
+}
+
+
+
+export type DeleteGroupResult = | { success: true; data: {} }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function deleteGroup(
+  config: {
+  primaryKey: UUID;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<DeleteGroupResult> {
+  const payload = {
+    action: "delete_group",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as DeleteGroupResult;
+}
+
+
+export type ValidateDeleteGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateDeleteGroup(
+  config: {
+  primaryKey: string;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateDeleteGroupResult> {
+  const payload = {
+    action: "delete_group",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateDeleteGroupResult;
+}
+
+
+export type ListMembershipsFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferListMembershipsResult<
+  Fields extends ListMembershipsFields,
+> = {
+  results: Array<InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type ListMembershipsResult<Fields extends ListMembershipsFields> = | { success: true; data: InferListMembershipsResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function listMemberships<Fields extends ListMembershipsFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsGroupMembershipFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ListMembershipsResult<Fields>> {
+  const payload = {
+    action: "list_memberships",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ListMembershipsResult<Fields>;
+}
+
+
+export type ValidateListMembershipsResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateListMemberships(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateListMembershipsResult> {
+  const payload = {
+    action: "list_memberships"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateListMembershipsResult;
+}
+
+
+export type JoinGroupInput = {
+  userId: UUID;
+  groupId: UUID;
+};
+
+export type JoinGroupValidationErrors = {
+  userId?: string[];
+  groupId?: string[];
+};
+
+export type JoinGroupFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferJoinGroupResult<
+  Fields extends JoinGroupFields,
+> = InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>;
+
+export type JoinGroupResult<Fields extends JoinGroupFields> = | { success: true; data: InferJoinGroupResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function joinGroup<Fields extends JoinGroupFields>(
+  config: {
+  input: JoinGroupInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<JoinGroupResult<Fields>> {
+  const payload = {
+    action: "join_group",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as JoinGroupResult<Fields>;
+}
+
+
+export type ValidateJoinGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateJoinGroup(
+  config: {
+  input: JoinGroupInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateJoinGroupResult> {
+  const payload = {
+    action: "join_group",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateJoinGroupResult;
+}
+
+
+export type InviteToGroupInput = {
+  userId: UUID;
+  groupId: UUID;
+  invitedById?: UUID | null;
+};
+
+export type InviteToGroupValidationErrors = {
+  userId?: string[];
+  groupId?: string[];
+  invitedById?: string[];
+};
+
+export type InviteToGroupFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferInviteToGroupResult<
+  Fields extends InviteToGroupFields,
+> = InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>;
+
+export type InviteToGroupResult<Fields extends InviteToGroupFields> = | { success: true; data: InferInviteToGroupResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function inviteToGroup<Fields extends InviteToGroupFields>(
+  config: {
+  input: InviteToGroupInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<InviteToGroupResult<Fields>> {
+  const payload = {
+    action: "invite_to_group",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as InviteToGroupResult<Fields>;
+}
+
+
+export type ValidateInviteToGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateInviteToGroup(
+  config: {
+  input: InviteToGroupInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateInviteToGroupResult> {
+  const payload = {
+    action: "invite_to_group",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateInviteToGroupResult;
+}
+
+
+export type AcceptInvitationFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferAcceptInvitationResult<
+  Fields extends AcceptInvitationFields,
+> = InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>;
+
+export type AcceptInvitationResult<Fields extends AcceptInvitationFields> = | { success: true; data: InferAcceptInvitationResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function acceptInvitation<Fields extends AcceptInvitationFields>(
+  config: {
+  primaryKey: UUID;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<AcceptInvitationResult<Fields>> {
+  const payload = {
+    action: "accept_invitation",
+    primaryKey: config.primaryKey,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as AcceptInvitationResult<Fields>;
+}
+
+
+export type ValidateAcceptInvitationResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateAcceptInvitation(
+  config: {
+  primaryKey: string;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateAcceptInvitationResult> {
+  const payload = {
+    action: "accept_invitation",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateAcceptInvitationResult;
+}
+
+
+export type UpdateMemberRoleInput = {
+  role?: "admin" | "member";
+};
+
+export type UpdateMemberRoleValidationErrors = {
+  role?: string[];
+};
+
+export type UpdateMemberRoleFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferUpdateMemberRoleResult<
+  Fields extends UpdateMemberRoleFields,
+> = InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>;
+
+export type UpdateMemberRoleResult<Fields extends UpdateMemberRoleFields> = | { success: true; data: InferUpdateMemberRoleResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function updateMemberRole<Fields extends UpdateMemberRoleFields>(
+  config: {
+  primaryKey: UUID;
+  input: UpdateMemberRoleInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<UpdateMemberRoleResult<Fields>> {
+  const payload = {
+    action: "update_member_role",
+    primaryKey: config.primaryKey,
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as UpdateMemberRoleResult<Fields>;
+}
+
+
+export type ValidateUpdateMemberRoleResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateUpdateMemberRole(
+  config: {
+  primaryKey: string;
+  input: UpdateMemberRoleInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateUpdateMemberRoleResult> {
+  const payload = {
+    action: "update_member_role",
+    primaryKey: config.primaryKey,
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateUpdateMemberRoleResult;
+}
+
+
+
+export type LeaveGroupResult = | { success: true; data: {} }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function leaveGroup(
+  config: {
+  primaryKey: UUID;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<LeaveGroupResult> {
+  const payload = {
+    action: "leave_group",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as LeaveGroupResult;
+}
+
+
+export type ValidateLeaveGroupResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateLeaveGroup(
+  config: {
+  primaryKey: string;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateLeaveGroupResult> {
+  const payload = {
+    action: "leave_group",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateLeaveGroupResult;
+}
 
 

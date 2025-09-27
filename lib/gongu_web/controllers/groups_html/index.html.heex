@@ -1,0 +1,11 @@
+<Layouts.app flash={@flash} current_user={@current_user}>
+  <div id="react-root" class="min-h-screen bg-gray-50">
+    <!-- React 앱이 여기에 마운트됩니다 -->
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  </div>
+  
+  <!-- React 앱 로드 -->
+  <script type="module" src={~p"/assets/js/index.js"}></script>
+</Layouts.app>

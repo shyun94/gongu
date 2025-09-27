@@ -37,15 +37,15 @@ defmodule GonguWeb.Router do
       # on_mount {GonguWeb.LiveUserAuth, :live_no_user}
     end
 
-    post "/rpc/run", AshTypescriptRpcController, :run
-    post "/rpc/validate", AshTypescriptRpcController, :validate
-    get "/ash-typescript", PageController, :index
+    # 그룹 관리 페이지 (인증 필요)
+    get "/groups", GroupsController, :index
+
   end
 
   scope "/", GonguWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", GroupsController, :index
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
@@ -70,6 +70,14 @@ defmodule GonguWeb.Router do
       auth_routes_prefix: "/auth",
       overrides: [GonguWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.Default]
     )
+  end
+
+  # RPC endpoints for AshTypescript
+  scope "/rpc", GonguWeb do
+    pipe_through :browser
+
+    post "/run", AshTypescriptRpcController, :run
+    post "/validate", AshTypescriptRpcController, :validate
   end
 
   # Other scopes may use custom stacks.

@@ -19,7 +19,8 @@ config :ash_typescript,
   generate_validation_functions: true,
   zod_import_path: "zod",
   zod_schema_suffix: "ZodSchema",
-  phoenix_import_path: "phoenix"
+  phoenix_import_path: "phoenix",
+  domains: [Gongu.Accounts, Gongu.Groups]
 
 config :ash,
   allow_forbidden_field_for_relationships_by_default?: true,
@@ -65,7 +66,7 @@ config :spark,
 config :gongu,
   ecto_repos: [Gongu.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Gongu.Accounts]
+  ash_domains: [Gongu.Accounts, Gongu.Groups]
 
 # Configures the endpoint
 config :gongu, GonguWeb.Endpoint,

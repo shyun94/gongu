@@ -31,6 +31,10 @@ defmodule GonguWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :current_user, :map,
+    default: nil,
+    doc: "the current authenticated user"
+
   slot :inner_block, required: true
 
   def app(assigns) do

@@ -3,7 +3,7 @@ defmodule GonguWeb.AuthController do
   use AshAuthentication.Phoenix.Controller
 
   def success(conn, activity, user, _token) do
-    return_to = get_session(conn, :return_to) || ~p"/"
+    return_to = get_session(conn, :return_to) || ~p"/groups"
 
     message =
       case activity do
@@ -45,7 +45,7 @@ defmodule GonguWeb.AuthController do
   end
 
   def sign_out(conn, _params) do
-    return_to = get_session(conn, :return_to) || ~p"/"
+    return_to = get_session(conn, :return_to) || ~p"/sign-in"
 
     conn
     |> clear_session(:gongu)
