@@ -7,12 +7,6 @@ defmodule Gongu.Accounts.User do
     extensions: [AshAuthentication]
 
   authentication do
-    add_ons do
-      log_out_everywhere do
-        apply_on_password_change? true
-      end
-    end
-
     tokens do
       enabled? true
       token_resource Gongu.Accounts.Token
@@ -22,12 +16,63 @@ defmodule Gongu.Accounts.User do
     end
 
     strategies do
-      magic_link do
-        identity_field :email
-        registration_enabled? true
-        require_interaction? true
+      # 카카오 로그인
+      oauth2 :kakao do
+        client_id fn _, _ ->
+          {:ok, Application.get_env(:gongu, :kakao)[:client_id]}
+        end
 
-        sender Gongu.Accounts.User.Senders.SendMagicLinkEmail
+        redirect_uri fn _, _ ->
+          {:ok, Application.get_env(:gongu, :kakao)[:redirect_uri]}
+        end
+
+        # 카카오는 기본적으로 client_secret이 필요 없지만,
+        # Assent가 요구하므로 빈 값이라도 제공
+        client_secret fn _, _ ->
+          secret = Application.get_env(:gongu, :kakao)[:client_secret]
+          if is_nil(secret) or secret == "" do
+            {:ok, "not_required"}
+          else
+            {:ok, secret}
+          end
+        end
+
+        base_url "https://kauth.kakao.com"
+        authorize_url "https://kauth.kakao.com/oauth/authorize"
+        token_url "https://kauth.kakao.com/oauth/token"
+        user_url "https://kapi.kakao.com/v2/user/me"
+
+        # authorization_params scope: "profile_nickname,account_email"
+
+        identity_resource Gongu.Accounts.UserIdentity
+      end
+
+      # Apple 로그인
+      oauth2 :apple do
+        client_id fn _, _ ->
+          {:ok, Application.get_env(:gongu, :apple)[:client_id]}
+        end
+
+        redirect_uri fn _, _ ->
+          {:ok, Application.get_env(:gongu, :apple)[:redirect_uri]}
+        end
+
+        client_secret fn _, _ ->
+          case Application.get_env(:gongu, :apple)[:client_secret] do
+            "" -> {:ok, nil}
+            nil -> {:ok, nil}
+            secret -> {:ok, secret}
+          end
+        end
+
+        base_url "https://appleid.apple.com"
+        authorize_url "https://appleid.apple.com/auth/authorize"
+        token_url "https://appleid.apple.com/auth/token"
+        user_url "https://appleid.apple.com/auth/userinfo"
+
+        authorization_params scope: "name email", response_mode: "form_post"
+
+        identity_resource Gongu.Accounts.UserIdentity
       end
     end
   end
@@ -38,7 +83,7 @@ defmodule Gongu.Accounts.User do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy]
 
     read :get_by_subject do
       description "Get a user by the subject claim in a JWT"
@@ -58,32 +103,61 @@ defmodule Gongu.Accounts.User do
       filter expr(email == ^arg(:email))
     end
 
-    create :sign_in_with_magic_link do
-      description "Sign in or register a user with magic link."
-
-      argument :token, :string do
-        description "The token from the magic link that was sent to the user"
-        allow_nil? false
-      end
-
+    # OAuth 회원가입/로그인 액션
+    create :register_with_kakao do
+      description "Register or sign in with Kakao"
+      argument :user_info, :map, allow_nil?: false
+      argument :oauth_tokens, :map, allow_nil?: false
       upsert? true
       upsert_identity :unique_email
-      upsert_fields [:email]
 
-      # Uses the information from the token to create or sign in the user
-      change AshAuthentication.Strategy.MagicLink.SignInChange
+      change AshAuthentication.GenerateTokenChange
+      change {AshAuthentication.Strategy.OAuth2.IdentityChange, strategy: :kakao}
+
+      change fn changeset, _ ->
+        user_info = Ash.Changeset.get_argument(changeset, :user_info)
+        email = get_in(user_info, ["kakao_account", "email"])
+
+        if email do
+          Ash.Changeset.change_attribute(changeset, :email, email)
+        else
+          # 카카오에서 이메일을 못 받은 경우 임시 이메일 생성
+          uid = to_string(get_in(user_info, ["id"]))
+          Ash.Changeset.change_attribute(changeset, :email, "kakao_#{uid}@gongu.app")
+        end
+      end
 
       metadata :token, :string do
         allow_nil? false
       end
     end
 
-    action :request_magic_link do
-      argument :email, :ci_string do
-        allow_nil? false
+    create :register_with_apple do
+      description "Register or sign in with Apple"
+      argument :user_info, :map, allow_nil?: false
+      argument :oauth_tokens, :map, allow_nil?: false
+      upsert? true
+      upsert_identity :unique_email
+
+      change AshAuthentication.GenerateTokenChange
+      change {AshAuthentication.Strategy.OAuth2.IdentityChange, strategy: :apple}
+
+      change fn changeset, _ ->
+        user_info = Ash.Changeset.get_argument(changeset, :user_info)
+        email = get_in(user_info, ["email"])
+
+        if email do
+          Ash.Changeset.change_attribute(changeset, :email, email)
+        else
+          # Apple에서 이메일을 못 받은 경우 임시 이메일 생성
+          sub = to_string(get_in(user_info, ["sub"]))
+          Ash.Changeset.change_attribute(changeset, :email, "apple_#{sub}@gongu.app")
+        end
       end
 
-      run AshAuthentication.Strategy.MagicLink.Request
+      metadata :token, :string do
+        allow_nil? false
+      end
     end
   end
 

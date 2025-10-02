@@ -46,30 +46,13 @@ defmodule GonguWeb.Router do
     pipe_through :browser
 
     get "/", GroupsController, :index
+
+    # OAuth 인증 라우트 (자동 생성됨)
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
-    # Remove these if you'd like to use your own authentication views
-    sign_in_route register_path: "/register",
-                  reset_path: "/reset",
-                  auth_routes_prefix: "/auth",
-                  on_mount: [{GonguWeb.LiveUserAuth, :live_no_user}],
-                  overrides: [GonguWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.Default]
-
-    # Remove this if you do not want to use the reset password feature
-    reset_route auth_routes_prefix: "/auth",
-                overrides: [GonguWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.Default]
-
-    # Remove this if you do not use the confirmation strategy
-    confirm_route Gongu.Accounts.User, :confirm_new_user,
-      auth_routes_prefix: "/auth",
-      overrides: [GonguWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.Default]
-
-    # Remove this if you do not use the magic link strategy.
-    magic_sign_in_route(Gongu.Accounts.User, :magic_link,
-      auth_routes_prefix: "/auth",
-      overrides: [GonguWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.Default]
-    )
+    # 커스텀 로그인 페이지
+    get "/sign-in", OAuthController, :sign_in
   end
 
   # RPC endpoints for AshTypescript

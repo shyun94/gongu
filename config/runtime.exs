@@ -7,6 +7,17 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 
+# OAuth 설정 (모든 환경)
+config :gongu, :kakao,
+  client_id: System.get_env("KAKAO_CLIENT_ID"),
+  client_secret: System.get_env("KAKAO_CLIENT_SECRET"),
+  redirect_uri: System.get_env("KAKAO_REDIRECT_URI") || "http://localhost:4000/auth/user/kakao/callback"
+
+config :gongu, :apple,
+  client_id: System.get_env("APPLE_CLIENT_ID"),
+  client_secret: System.get_env("APPLE_CLIENT_SECRET"),
+  redirect_uri: System.get_env("APPLE_REDIRECT_URI") || "http://localhost:4000/auth/user/apple/callback"
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server

@@ -8,5 +8,6 @@ defmodule Gongu.Accounts do
   resources do
     resource Gongu.Accounts.Token
     resource Gongu.Accounts.User
+    resource Gongu.Accounts.UserIdentity
   end
 end

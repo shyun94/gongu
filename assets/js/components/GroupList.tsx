@@ -91,7 +91,7 @@ export const GroupList: React.FC = () => {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">
-              공구 - 공유 가게부
+              GongU - 공유 가게부
             </h1>
             <button
               onClick={handleLogout}
