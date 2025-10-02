@@ -1,4 +1,4 @@
-defmodule GonguWeb.GroupsController do
+defmodule GonguWeb.PageController do
   use GonguWeb, :controller
 
   def index(conn, _params) do

@@ -37,15 +37,13 @@ defmodule GonguWeb.Router do
       # on_mount {GonguWeb.LiveUserAuth, :live_no_user}
     end
 
-    # 그룹 관리 페이지 (인증 필요)
-    get "/groups", GroupsController, :index
-
   end
 
   scope "/", GonguWeb do
     pipe_through :browser
 
-    get "/", GroupsController, :index
+    # React 앱 메인 페이지 (인증 필요)
+    get "/", PageController, :index
 
     # OAuth 인증 라우트 (자동 생성됨)
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"
