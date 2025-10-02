@@ -35,4 +35,7 @@ gongu-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Secret configuration files
 .env
+/config/dev.secret.exs
+/config/*.secret.exs

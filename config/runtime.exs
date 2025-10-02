@@ -7,16 +7,19 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 
-# OAuth 설정 (모든 환경)
-config :gongu, :kakao,
-  client_id: System.get_env("KAKAO_CLIENT_ID"),
-  client_secret: System.get_env("KAKAO_CLIENT_SECRET"),
-  redirect_uri: System.get_env("KAKAO_REDIRECT_URI") || "http://localhost:4000/auth/user/kakao/callback"
+# OAuth 설정 (프로덕션 환경에서만 환경 변수 사용)
+# 개발 환경은 config/dev.secret.exs에서 설정
+if config_env() == :prod do
+  config :gongu, :kakao,
+    client_id: System.get_env("KAKAO_CLIENT_ID"),
+    client_secret: System.get_env("KAKAO_CLIENT_SECRET"),
+    redirect_uri: System.get_env("KAKAO_REDIRECT_URI")
 
-config :gongu, :apple,
-  client_id: System.get_env("APPLE_CLIENT_ID"),
-  client_secret: System.get_env("APPLE_CLIENT_SECRET"),
-  redirect_uri: System.get_env("APPLE_REDIRECT_URI") || "http://localhost:4000/auth/user/apple/callback"
+  config :gongu, :apple,
+    client_id: System.get_env("APPLE_CLIENT_ID"),
+    client_secret: System.get_env("APPLE_CLIENT_SECRET"),
+    redirect_uri: System.get_env("APPLE_REDIRECT_URI")
+end
 
 # ## Using releases
 #

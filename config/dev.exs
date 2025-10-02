@@ -87,3 +87,9 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# 개발 환경 secret 설정 로드 (OAuth 키 등)
+# 이 파일이 없으면 runtime.exs의 기본값 사용
+if File.exists?("config/dev.secret.exs") do
+  import_config "dev.secret.exs"
+end
