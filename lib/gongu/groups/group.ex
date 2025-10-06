@@ -26,17 +26,21 @@ defmodule Gongu.Groups.Group do
 
       # 그룹을 생성하면 생성자를 자동으로 관리자로 추가
       change after_action(fn changeset, group, context ->
-        creator_id = group.creator_id
+               creator_id = group.creator_id
 
-        case Ash.create(Gongu.Groups.GroupMembership, %{
-          user_id: creator_id,
-          group_id: group.id,
-          role: :admin
-        }, actor: context.actor) do
-          {:ok, _membership} -> {:ok, group}
-          {:error, error} -> {:error, error}
-        end
-      end)
+               case Ash.create(
+                      Gongu.Groups.GroupMembership,
+                      %{
+                        user_id: creator_id,
+                        group_id: group.id,
+                        role: :admin
+                      },
+                      actor: context.actor
+                    ) do
+                 {:ok, _membership} -> {:ok, group}
+                 {:error, error} -> {:error, error}
+               end
+             end)
     end
 
     update :update do

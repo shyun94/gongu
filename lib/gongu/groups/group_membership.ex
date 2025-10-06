@@ -62,13 +62,18 @@ defmodule Gongu.Groups.GroupMembership do
 
     # 역할 변경은 그룹 관리자만 가능
     policy action(:update_role) do
-      authorize_if expr(group.memberships.role == :admin and group.memberships.user_id == ^actor(:id))
+      authorize_if expr(
+                     group.memberships.role == :admin and group.memberships.user_id == ^actor(:id)
+                   )
     end
 
     # 멤버십 삭제(탈퇴)는 본인이거나 그룹 관리자가 가능
     policy action_type(:destroy) do
       authorize_if expr(user_id == ^actor(:id))
-      authorize_if expr(group.memberships.role == :admin and group.memberships.user_id == ^actor(:id))
+
+      authorize_if expr(
+                     group.memberships.role == :admin and group.memberships.user_id == ^actor(:id)
+                   )
     end
   end
 

@@ -6,6 +6,7 @@ defmodule GonguWeb.PageController do
     case conn.assigns[:current_user] do
       nil ->
         redirect(conn, to: ~p"/sign-in")
+
       _user ->
         render(conn, :index)
     end

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  listGroups,
-  createGroup,
-  GonguGroupsGroupResourceSchema,
-  buildCSRFHeaders,
-} from "../ash_rpc";
+import { listGroups, createGroup, buildCSRFHeaders } from "../ash_rpc";
 
-interface Group extends GonguGroupsGroupResourceSchema {}
+type Group = {
+  id: string;
+  name: string;
+  description: string;
+  creatorId: string;
+};
 
 export const GroupList: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -25,7 +25,7 @@ export const GroupList: React.FC = () => {
       });
 
       if (result.success) {
-        setGroups(result.data);
+        setGroups(result.data.results as Group[]);
       } else {
         setError("그룹을 불러오는데 실패했습니다.");
       }
@@ -55,7 +55,7 @@ export const GroupList: React.FC = () => {
       });
 
       if (result.success) {
-        setGroups([...groups, result.data]);
+        setGroups([...groups, result.data as Group]);
         setNewGroupName("");
         setNewGroupDescription("");
         setShowCreateForm(false);

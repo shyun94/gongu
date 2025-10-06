@@ -30,6 +30,7 @@ defmodule Gongu.Accounts.User do
         # Assent가 요구하므로 빈 값이라도 제공
         client_secret fn _, _ ->
           secret = Application.get_env(:gongu, :kakao)[:client_secret]
+
           if is_nil(secret) or secret == "" do
             {:ok, "not_required"}
           else

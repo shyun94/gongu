@@ -5,13 +5,13 @@ defmodule Gongu.Accounts.UserIdentity do
     data_layer: AshPostgres.DataLayer,
     extensions: [AshAuthentication.UserIdentity]
 
-  user_identity do
-    user_resource Gongu.Accounts.User
-  end
-
   postgres do
     table "user_identities"
     repo Gongu.Repo
+  end
+
+  user_identity do
+    user_resource Gongu.Accounts.User
   end
 
   actions do

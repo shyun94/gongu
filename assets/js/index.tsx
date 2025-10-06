@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GroupList } from "./components/GroupList";
+import { AppRouter } from "./router";
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -16,9 +16,7 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gray-50">
-        <GroupList />
-      </div>
+      <AppRouter />
     </QueryClientProvider>
   );
 };

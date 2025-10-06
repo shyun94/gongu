@@ -36,7 +36,6 @@ defmodule GonguWeb.Router do
       # If an authenticated user must *not* be present:
       # on_mount {GonguWeb.LiveUserAuth, :live_no_user}
     end
-
   end
 
   scope "/", GonguWeb do
