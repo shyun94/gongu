@@ -80,6 +80,12 @@ defmodule GonguWeb.Router do
       live_dashboard "/dashboard", metrics: GonguWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+
+    # 개발용 회원가입 페이지 (개발 환경에서만 접근 가능)
+    scope "/", GonguWeb do
+      pipe_through :browser
+      get "/sign-up", OAuthController, :sign_up
+    end
   end
 
   if Application.compile_env(:gongu, :dev_routes) do

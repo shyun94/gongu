@@ -16,6 +16,12 @@ defmodule Gongu.Accounts.User do
     end
 
     strategies do
+      # 개발용 이메일/비밀번호 인증
+      password :password do
+        identity_field :email
+        hashed_password_field :hashed_password
+      end
+
       # 카카오 로그인
       oauth2 :kakao do
         client_id fn _, _ ->
@@ -174,6 +180,11 @@ defmodule Gongu.Accounts.User do
     attribute :email, :ci_string do
       allow_nil? false
       public? true
+    end
+
+    attribute :hashed_password, :string do
+      allow_nil? true
+      sensitive? true
     end
   end
 

@@ -1,0 +1,115 @@
+<%= if @dev_mode do %>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+    <div class="w-full max-w-md p-8 space-y-8">
+      <%!-- 로고 & 헤더 --%>
+      <div class="text-center space-y-3">
+        <div class="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+            >
+            </path>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">회원가입</h1>
+        <p class="text-gray-500">개발용 계정 생성</p>
+      </div>
+
+    <%!-- 회원가입 폼 --%>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <.form
+        for={%{}}
+        action="/auth/user/password/register"
+        method="post"
+        id="password-register-form"
+      >
+        <div class="space-y-4">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+              이메일
+            </label>
+            <input
+              type="email"
+              name="user[email]"
+              id="email"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="test@example.com"
+              required
+            />
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+              비밀번호
+            </label>
+            <input
+              type="password"
+              name="user[password]"
+              id="password"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="••••••••"
+              required
+            />
+            <p class="text-xs text-gray-500 mt-1">최소 8자 이상 입력해주세요</p>
+          </div>
+          <div>
+            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
+              비밀번호 확인
+            </label>
+            <input
+              type="password"
+              name="user[password_confirmation]"
+              id="password_confirmation"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            가입하기
+          </button>
+        </div>
+      </.form>
+      <div class="mt-4 text-center">
+        <a href="/sign-in" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          이미 계정이 있으신가요? 로그인
+        </a>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+    <div class="w-full max-w-md p-8 space-y-8 text-center">
+      <div class="text-center space-y-3">
+        <div class="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+            >
+            </path>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">공유</h1>
+        <p class="text-gray-500">함께 만드는 공유 가계부</p>
+      </div>
+      
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">페이지를 찾을 수 없습니다</h2>
+        <p class="text-gray-500 mb-6">이 페이지는 개발 환경에서만 사용할 수 있습니다.</p>
+        <a href="/sign-in" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+          로그인 페이지로 이동
+        </a>
+      </div>
+    </div>
+  </div>
+<% end %>
+
