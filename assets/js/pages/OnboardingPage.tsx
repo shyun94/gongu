@@ -33,10 +33,8 @@ export const OnboardingPage: React.FC = () => {
       });
 
       if (result.success) {
-        // 그룹 생성 후 캘린더 페이지로 이동 (TODO: 캘린더 라우트 구현 필요)
-        // navigate({ to: "/calendar" });
-        // 임시로 그룹 목록 페이지로 이동
-        navigate({ to: "/groups" });
+        // 그룹 생성 후 Budget Calendar 페이지로 이동
+        navigate({ to: "/budget-calendar" });
       } else {
         setError("그룹 생성에 실패했습니다.");
       }
@@ -62,10 +60,8 @@ export const OnboardingPage: React.FC = () => {
     try {
       // const result = await joinGroup({ inviteCode, headers: buildCSRFHeaders() });
       // if (result.success) {
-      //   // 그룹 가입 후 캘린더 페이지로 이동 (TODO: 캘린더 라우트 구현 필요)
-      //   // navigate({ to: "/calendar" });
-      //   // 임시로 그룹 목록 페이지로 이동
-      //   navigate({ to: "/groups" });
+      //   // 그룹 가입 후 Budget Calendar 페이지로 이동
+      //   navigate({ to: "/budget-calendar" });
       // }
       setError("그룹 가입 기능은 아직 구현되지 않았습니다.");
     } catch (err) {

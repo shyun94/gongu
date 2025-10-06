@@ -9,6 +9,7 @@ import {
 import { IndexPage } from "./pages/IndexPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { GroupsPage } from "./pages/GroupsPage";
+import { BudgetCalendarPage } from "./pages/BudgetCalendarPage";
 
 // 루트 라우트 정의
 const rootRoute = createRootRoute({
@@ -36,11 +37,19 @@ const groupsRoute = createRoute({
   component: GroupsPage,
 });
 
+// Budget Calendar 라우트
+const budgetCalendarRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/budget-calendar",
+  component: BudgetCalendarPage,
+});
+
 // 라우트 트리 구성
 const routeTree = rootRoute.addChildren([
   indexRoute,
   onboardingRoute,
   groupsRoute,
+  budgetCalendarRoute,
 ]);
 
 // 라우터 생성
