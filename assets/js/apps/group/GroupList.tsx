@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { listGroups, createGroup, buildCSRFHeaders } from "../ash_rpc";
+import { listGroups, createGroup, buildCSRFHeaders } from "@/ash_rpc";
 
 type Group = {
   id: string;

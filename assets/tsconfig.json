@@ -28,11 +28,13 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "*": ["../deps/*"]
+      "*": ["../deps/*"],
+      // import { ... } from @/ash_rpc;
+      "@/*": ["./js/*"]
     },
     "allowJs": true,
     "noEmit": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
   },
   "include": ["js/**/*"]
 }

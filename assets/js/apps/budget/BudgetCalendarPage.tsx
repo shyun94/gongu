@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Calendar } from "../components/Calendar";
-import { Transaction } from "../components/Calendar/types";
+import { Calendar } from "./Calendar";
+import { Transaction } from "./Calendar/types";
 import dayjs from "dayjs";
 
 export const BudgetCalendarPage: React.FC = () => {
