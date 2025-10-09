@@ -10,6 +10,7 @@ import { IndexPage } from "./apps/IndexPage";
 import { OnboardingPage } from "./apps/OnboardingPage";
 import { GroupsPage } from "./apps/group/GroupsPage";
 import { BudgetCalendarPage } from "@/apps/budget/BudgetCalendarPage";
+import { SettingsPage } from "@/apps/settings/SettingsPage";
 
 // 루트 라우트 정의
 const rootRoute = createRootRoute({
@@ -44,12 +45,20 @@ const budgetCalendarRoute = createRoute({
   component: BudgetCalendarPage,
 });
 
+// 설정 라우트
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/settings",
+  component: SettingsPage,
+});
+
 // 라우트 트리 구성
 const routeTree = rootRoute.addChildren([
   indexRoute,
   onboardingRoute,
   groupsRoute,
   budgetCalendarRoute,
+  settingsRoute,
 ]);
 
 // 라우터 생성
