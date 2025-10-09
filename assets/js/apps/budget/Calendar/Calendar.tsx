@@ -1,8 +1,15 @@
-import React, { useState, useCallback } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import { Transaction } from "./types";
 import { TMonth } from "./types";
 import dayjs, { Dayjs } from "dayjs";
 import Month from "./Month";
+import useTripleSlider from "./useTripleSlider";
 
 interface CalendarProps {
   transactions: Transaction[];
@@ -13,6 +20,34 @@ export function Calendar({ transactions }: CalendarProps) {
     dayjs().format("YYYY-MM")
   );
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
+  const {
+    containerRef,
+    isDragging,
+    slideIndex,
+    trackStyle,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleTransitionEnd,
+    goPrev,
+    goNext,
+  } = useTripleSlider({
+    minSwipeDistance: 80,
+    maxDragDistance: 120,
+    animationMs: 250,
+  });
+
+  const prevMonthStr = useMemo(
+    () => dayjs(currentMonth).subtract(1, "month").format("YYYY-MM") as TMonth,
+    [currentMonth]
+  );
+  const nextMonthStr = useMemo(
+    () => dayjs(currentMonth).add(1, "month").format("YYYY-MM") as TMonth,
+    [currentMonth]
+  );
 
   const handleDateSelect = useCallback(
     (date: Dayjs) => {
@@ -26,76 +61,80 @@ export function Calendar({ transactions }: CalendarProps) {
   );
 
   const handlePrevMonth = useCallback(() => {
-    const prevMonth = dayjs(currentMonth)
-      .subtract(1, "month")
-      .format("YYYY-MM");
-    setCurrentMonth(prevMonth as TMonth);
-  }, [currentMonth]);
+    goPrev();
+  }, [goPrev]);
 
   const handleNextMonth = useCallback(() => {
-    const nextMonth = dayjs(currentMonth).add(1, "month").format("YYYY-MM");
-    setCurrentMonth(nextMonth as TMonth);
-  }, [currentMonth]);
+    goNext();
+  }, [goNext]);
+
+  // 리사이즈/마우스 리브 처리 및 제스처 로직은 훅 내부에서 관리
 
   return (
-    <div className="w-full h-full bg-white">
+    <div
+      ref={containerRef}
+      className="w-full h-full bg-white overflow-hidden select-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
       {/* 캘린더 헤더 */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <button
-          onClick={handlePrevMonth}
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          aria-label="이전 달"
-        >
-          <svg
-            className="w-5 h-5 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-
+      <div className="flex items-center justify-center p-3 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">
-          {dayjs(currentMonth).format("YYYY년 MM월")}
+          {dayjs(currentMonth).format("YYYY년 M월")}
         </h2>
-
-        <button
-          onClick={handleNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          aria-label="다음 달"
-        >
-          <svg
-            className="w-5 h-5 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
       </div>
 
-      {/* 캘린더 본체 */}
-      <div className="p-2">
-        <Month
-          month={currentMonth}
-          transactions={transactions}
-          selectedDate={selectedDate}
-          onSelect={handleDateSelect}
-        />
+      {/* 캘린더 본체: 이전/현재/다음 3개 뷰를 트랙에 렌더링 */}
+      <div
+        className={`relative w-full h-full ${
+          isDragging.current ? "cursor-grabbing" : "cursor-grab"
+        }`}
+      >
+        <div
+          className="flex h-full will-change-transform"
+          style={trackStyle}
+          onTransitionEnd={() =>
+            handleTransitionEnd((direction) => {
+              if (direction === 1) setCurrentMonth(nextMonthStr);
+              else if (direction === -1) setCurrentMonth(prevMonthStr);
+            })
+          }
+        >
+          <div className="min-w-full shrink-0">
+            <div className="p-2">
+              <Month
+                month={prevMonthStr}
+                transactions={transactions}
+                selectedDate={selectedDate}
+                onSelect={handleDateSelect}
+              />
+            </div>
+          </div>
+          <div className="min-w-full shrink-0">
+            <div className="p-2">
+              <Month
+                month={currentMonth}
+                transactions={transactions}
+                selectedDate={selectedDate}
+                onSelect={handleDateSelect}
+              />
+            </div>
+          </div>
+          <div className="min-w-full shrink-0">
+            <div className="p-2">
+              <Month
+                month={nextMonthStr}
+                transactions={transactions}
+                selectedDate={selectedDate}
+                onSelect={handleDateSelect}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
