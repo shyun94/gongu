@@ -16,7 +16,6 @@ defmodule Gongu.Groups do
 
     resource Gongu.Groups.GroupMembership do
       rpc_action :list_memberships, :read
-      rpc_action :join_group, :join_group
       rpc_action :invite_to_group, :invite_to_group
       rpc_action :accept_invitation, :accept_invitation
       rpc_action :update_member_role, :update_role

@@ -18,13 +18,6 @@ defmodule Gongu.Groups.GroupMembership do
       accept [:user_id, :group_id, :role]
     end
 
-    create :join_group do
-      description "사용자가 그룹에 가입"
-      accept [:user_id, :group_id]
-      change set_attribute(:role, :member)
-      change set_attribute(:status, :active)
-    end
-
     create :invite_to_group do
       description "그룹에 사용자를 초대"
       accept [:user_id, :group_id, :invited_by_id]
