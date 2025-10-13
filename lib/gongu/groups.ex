@@ -18,7 +18,6 @@ defmodule Gongu.Groups do
       rpc_action :list_memberships, :read
       rpc_action :invite_to_group, :invite_to_group
       rpc_action :join_with_invitation, :join_with_invitation
-      rpc_action :accept_invitation, :accept_invitation
       rpc_action :update_member_role, :update_role
       rpc_action :leave_group, :destroy
     end

@@ -81,11 +81,6 @@ defmodule Gongu.Groups.GroupMembership do
       end
     end
 
-    update :accept_invitation do
-      description "초대를 수락"
-      change set_attribute(:status, :active)
-    end
-
     update :update_role do
       description "멤버의 역할 변경"
       accept [:role]
@@ -107,11 +102,6 @@ defmodule Gongu.Groups.GroupMembership do
     # 초대 코드로 가입은 인증된 사용자만 가능
     policy action(:join_with_invitation) do
       authorize_if actor_present()
-    end
-
-    # 초대 수락은 해당 사용자만 가능
-    policy action(:accept_invitation) do
-      authorize_if expr(user_id == ^actor(:id))
     end
 
     # 역할 변경은 그룹 관리자만 가능
