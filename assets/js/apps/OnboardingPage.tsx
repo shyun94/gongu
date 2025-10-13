@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { createGroup, buildCSRFHeaders } from "../ash_rpc";
+import { createGroup, buildCSRFHeaders, joinWithInvitation } from "../ash_rpc";
 
 export const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,14 +56,20 @@ export const OnboardingPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // TODO: 그룹 가입 API 구현
     try {
-      // const result = await joinGroup({ inviteCode, headers: buildCSRFHeaders() });
-      // if (result.success) {
-      //   // 그룹 가입 후 Budget Calendar 페이지로 이동
-      //   navigate({ to: "/budget-calendar" });
-      // }
-      setError("그룹 가입 기능은 아직 구현되지 않았습니다.");
+      const result = await joinWithInvitation({
+        input: { inviteCode },
+        fields: ["id", "groupId", "userId", "role", "status"],
+        headers: buildCSRFHeaders(),
+      });
+      if (result.success) {
+        // 그룹 가입 후 Budget Calendar 페이지로 이동
+        navigate({ to: "/budget-calendar" });
+      } else {
+        setError(
+          result.errors?.[0]?.message || "그룹 가입 중 오류가 발생했습니다."
+        );
+      }
     } catch (err) {
       setError("그룹 가입 중 오류가 발생했습니다.");
     } finally {

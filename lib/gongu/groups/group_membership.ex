@@ -25,6 +25,62 @@ defmodule Gongu.Groups.GroupMembership do
       change set_attribute(:status, :pending)
     end
 
+    create :join_with_invitation do
+      description "초대 코드로 그룹에 가입"
+      argument :invite_code, :string, allow_nil?: false
+
+      change set_attribute(:user_id, actor(:id))
+      change set_attribute(:status, :active)
+      change set_attribute(:role, :member)
+
+      # 초대 코드로 그룹 찾기 및 중복 가입 방지
+      change fn changeset, _context ->
+        invite_code = Ash.Changeset.get_argument(changeset, :invite_code)
+        user_id = Ash.Changeset.get_attribute(changeset, :user_id)
+
+        case Ash.read_one(Gongu.Groups.Group,
+               filter: [invite_code: invite_code],
+               action: :read
+             ) do
+          {:ok, group} ->
+            # 이미 해당 그룹에 가입되어 있는지 확인
+            case Ash.read_one(Gongu.Groups.GroupMembership,
+                   filter: [user_id: user_id, group_id: group.id],
+                   action: :read
+                 ) do
+              {:ok, nil} ->
+                # 가입되지 않았으면 그룹 ID 설정
+                Ash.Changeset.change_attribute(changeset, :group_id, group.id)
+
+              {:ok, _existing_membership} ->
+                # 이미 가입되어 있으면 에러
+                Ash.Changeset.add_error(changeset,
+                  field: :invite_code,
+                  message: "이미 해당 그룹에 가입되어 있습니다"
+                )
+
+              {:error, error} ->
+                Ash.Changeset.add_error(changeset,
+                  field: :invite_code,
+                  message: "가입 상태 확인 중 오류가 발생했습니다"
+                )
+            end
+
+          {:ok, nil} ->
+            Ash.Changeset.add_error(changeset,
+              field: :invite_code,
+              message: "유효하지 않은 초대 코드입니다"
+            )
+
+          {:error, error} ->
+            Ash.Changeset.add_error(changeset,
+              field: :invite_code,
+              message: "초대 코드 확인 중 오류가 발생했습니다"
+            )
+        end
+      end
+    end
+
     update :accept_invitation do
       description "초대를 수락"
       change set_attribute(:status, :active)
@@ -45,6 +101,11 @@ defmodule Gongu.Groups.GroupMembership do
 
     # 그룹 가입은 인증된 사용자만 가능
     policy action_type(:create) do
+      authorize_if actor_present()
+    end
+
+    # 초대 코드로 가입은 인증된 사용자만 가능
+    policy action(:join_with_invitation) do
       authorize_if actor_present()
     end
 

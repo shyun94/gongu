@@ -8,11 +8,12 @@ export type UUID = string;
 // GonguGroupsGroup Schema
 export type GonguGroupsGroupResourceSchema = {
   __type: "Resource";
-  __primitiveFields: "id" | "name" | "description" | "creatorId";
+  __primitiveFields: "id" | "name" | "description" | "creatorId" | "inviteCode";
   id: UUID;
   name: string;
   description: string | null;
   creatorId: UUID;
+  inviteCode: string | null;
 };
 
 
@@ -64,6 +65,12 @@ export type GonguGroupsGroupFilterInput = {
     eq?: UUID;
     notEq?: UUID;
     in?: Array<UUID>;
+  };
+
+  inviteCode?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
   };
 
 
@@ -1193,6 +1200,128 @@ export async function validateInviteToGroup(
 
   const result = await response.json();
   return result as ValidateInviteToGroupResult;
+}
+
+
+export type JoinWithInvitationInput = {
+  inviteCode: string;
+};
+
+export type JoinWithInvitationValidationErrors = {
+  inviteCode?: string[];
+};
+
+export type JoinWithInvitationFields = UnifiedFieldSelection<GonguGroupsGroupMembershipResourceSchema>[];
+
+type InferJoinWithInvitationResult<
+  Fields extends JoinWithInvitationFields,
+> = InferResult<GonguGroupsGroupMembershipResourceSchema, Fields>;
+
+export type JoinWithInvitationResult<Fields extends JoinWithInvitationFields> = | { success: true; data: InferJoinWithInvitationResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function joinWithInvitation<Fields extends JoinWithInvitationFields>(
+  config: {
+  input: JoinWithInvitationInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<JoinWithInvitationResult<Fields>> {
+  const payload = {
+    action: "join_with_invitation",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as JoinWithInvitationResult<Fields>;
+}
+
+
+export type ValidateJoinWithInvitationResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateJoinWithInvitation(
+  config: {
+  input: JoinWithInvitationInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateJoinWithInvitationResult> {
+  const payload = {
+    action: "join_with_invitation",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateJoinWithInvitationResult;
 }
 
 
