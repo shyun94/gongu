@@ -4,7 +4,7 @@ import { createInvitation, buildCSRFHeaders } from "../../ash_rpc";
 
 export const SettingsPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState<string>("");
-  const handleGenerate = useCallback(async () => {
+  const handleClickCodeGeneration = useCallback(async () => {
     const result = await createInvitation({
       input: {
         groupId: "2bf58a66-df68-4dd6-b1cd-3f550e0e6280",
@@ -46,13 +46,13 @@ export const SettingsPage: React.FC = () => {
           </p>
 
           <div className="flex flex-col gap-3">
-            <div className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none">
-              {inviteCode}
-            </div>
+            {inviteCode && (
+              <div className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none">
+                {inviteCode}
+              </div>
+            )}
             <button
-              onClick={() => {
-                handleGenerate();
-              }}
+              onClick={handleClickCodeGeneration}
               className="w-full px-4 py-3 rounded-md bg-blue-600 text-white text-center font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none"
             >
               초대 코드 생성

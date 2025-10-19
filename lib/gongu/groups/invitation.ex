@@ -112,10 +112,14 @@ defmodule Gongu.Groups.Invitation do
 
   # 초대 코드 생성 함수
   defp generate_invite_code do
-    # 8자리 랜덤 문자열 생성 (대문자, 소문자, 숫자)
-    :crypto.strong_rand_bytes(6)
-    |> Base.url_encode64(padding: false)
-    |> String.slice(0, 8)
-    |> String.upcase()
+    # 8자리 랜덤 문자열 생성 (대문자와 숫자만 사용)
+    # 헷갈리는 문자 제외 (I, O, 0, 1)
+    characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+    1..8
+    |> Enum.map(fn _ ->
+      String.at(characters, :rand.uniform(String.length(characters)) - 1)
+    end)
+    |> Enum.join()
   end
 end
