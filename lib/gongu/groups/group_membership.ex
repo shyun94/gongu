@@ -35,17 +35,15 @@ defmodule Gongu.Groups.GroupMembership do
 
       # 초대 코드로 유효한 초대 찾기 및 중복 가입 방지
       change fn changeset, context ->
+        require Ash.Query
+
         invite_code = Ash.Changeset.get_argument(changeset, :invite_code)
         user_id = Ash.Changeset.get_attribute(changeset, :user_id)
 
         # 유효한 초대 찾기 (만료되지 않고 pending 상태인 것만)
-        case Ash.read_one(Gongu.Groups.Invitation,
-               filter: [
-                 code: invite_code,
-                 status: :pending
-               ],
-               action: :read
-             ) do
+        case Gongu.Groups.Invitation
+             |> Ash.Query.filter(expr(code == ^invite_code and status == :pending))
+             |> Ash.read_one(action: :read, actor: context.actor) do
           {:ok, invitation} ->
             # 초대가 만료되었는지 확인
             if DateTime.compare(invitation.expires_at, DateTime.utc_now()) == :lt do
@@ -55,22 +53,14 @@ defmodule Gongu.Groups.GroupMembership do
               )
             else
               # 이미 해당 그룹에 가입되어 있는지 확인
-              case Ash.read_one(Gongu.Groups.GroupMembership,
-                     filter: [user_id: user_id, group_id: invitation.group_id],
-                     action: :read
-                   ) do
+              case Gongu.Groups.GroupMembership
+                   |> Ash.Query.filter(
+                     expr(user_id == ^user_id and group_id == ^invitation.group_id)
+                   )
+                   |> Ash.read_one(action: :read, actor: context.actor) do
                 {:ok, nil} ->
-                  # 가입되지 않았으면 그룹 ID 설정하고 초대를 수락 상태로 변경
-                  changeset =
-                    Ash.Changeset.change_attribute(changeset, :group_id, invitation.group_id)
-
-                  # 초대를 수락 상태로 변경 (after_action에서 처리)
-                  Ash.Changeset.after_action(changeset, fn changeset, membership ->
-                    case Ash.update(invitation, %{}, action: :accept, actor: context.actor) do
-                      {:ok, _updated_invitation} -> {:ok, membership}
-                      {:error, error} -> {:error, error}
-                    end
-                  end)
+                  # 가입되지 않았으면 그룹 ID 설정
+                  Ash.Changeset.change_attribute(changeset, :group_id, invitation.group_id)
 
                 {:ok, _existing_membership} ->
                   # 이미 가입되어 있으면 에러
