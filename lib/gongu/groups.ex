@@ -21,10 +21,15 @@ defmodule Gongu.Groups do
       rpc_action :update_member_role, :update_role
       rpc_action :leave_group, :destroy
     end
+
+    resource Gongu.Groups.Invitation do
+      rpc_action :create_invitation, :create
+    end
   end
 
   resources do
     resource Gongu.Groups.Group
     resource Gongu.Groups.GroupMembership
+    resource Gongu.Groups.Invitation
   end
 end

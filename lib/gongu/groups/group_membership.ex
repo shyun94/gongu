@@ -33,37 +33,58 @@ defmodule Gongu.Groups.GroupMembership do
       change set_attribute(:status, :active)
       change set_attribute(:role, :member)
 
-      # 초대 코드로 그룹 찾기 및 중복 가입 방지
-      change fn changeset, _context ->
+      # 초대 코드로 유효한 초대 찾기 및 중복 가입 방지
+      change fn changeset, context ->
         invite_code = Ash.Changeset.get_argument(changeset, :invite_code)
         user_id = Ash.Changeset.get_attribute(changeset, :user_id)
 
-        case Ash.read_one(Gongu.Groups.Group,
-               filter: [invite_code: invite_code],
+        # 유효한 초대 찾기 (만료되지 않고 pending 상태인 것만)
+        case Ash.read_one(Gongu.Groups.Invitation,
+               filter: [
+                 code: invite_code,
+                 status: :pending
+               ],
                action: :read
              ) do
-          {:ok, group} ->
-            # 이미 해당 그룹에 가입되어 있는지 확인
-            case Ash.read_one(Gongu.Groups.GroupMembership,
-                   filter: [user_id: user_id, group_id: group.id],
-                   action: :read
-                 ) do
-              {:ok, nil} ->
-                # 가입되지 않았으면 그룹 ID 설정
-                Ash.Changeset.change_attribute(changeset, :group_id, group.id)
+          {:ok, invitation} ->
+            # 초대가 만료되었는지 확인
+            if DateTime.compare(invitation.expires_at, DateTime.utc_now()) == :lt do
+              Ash.Changeset.add_error(changeset,
+                field: :invite_code,
+                message: "만료된 초대 코드입니다"
+              )
+            else
+              # 이미 해당 그룹에 가입되어 있는지 확인
+              case Ash.read_one(Gongu.Groups.GroupMembership,
+                     filter: [user_id: user_id, group_id: invitation.group_id],
+                     action: :read
+                   ) do
+                {:ok, nil} ->
+                  # 가입되지 않았으면 그룹 ID 설정하고 초대를 수락 상태로 변경
+                  changeset =
+                    Ash.Changeset.change_attribute(changeset, :group_id, invitation.group_id)
 
-              {:ok, _existing_membership} ->
-                # 이미 가입되어 있으면 에러
-                Ash.Changeset.add_error(changeset,
-                  field: :invite_code,
-                  message: "이미 해당 그룹에 가입되어 있습니다"
-                )
+                  # 초대를 수락 상태로 변경 (after_action에서 처리)
+                  Ash.Changeset.after_action(changeset, fn changeset, membership ->
+                    case Ash.update(invitation, %{}, action: :accept, actor: context.actor) do
+                      {:ok, _updated_invitation} -> {:ok, membership}
+                      {:error, error} -> {:error, error}
+                    end
+                  end)
 
-              {:error, error} ->
-                Ash.Changeset.add_error(changeset,
-                  field: :invite_code,
-                  message: "가입 상태 확인 중 오류가 발생했습니다"
-                )
+                {:ok, _existing_membership} ->
+                  # 이미 가입되어 있으면 에러
+                  Ash.Changeset.add_error(changeset,
+                    field: :invite_code,
+                    message: "이미 해당 그룹에 가입되어 있습니다"
+                  )
+
+                {:error, _error} ->
+                  Ash.Changeset.add_error(changeset,
+                    field: :invite_code,
+                    message: "가입 상태 확인 중 오류가 발생했습니다"
+                  )
+              end
             end
 
           {:ok, nil} ->
@@ -72,7 +93,7 @@ defmodule Gongu.Groups.GroupMembership do
               message: "유효하지 않은 초대 코드입니다"
             )
 
-          {:error, error} ->
+          {:error, _error} ->
             Ash.Changeset.add_error(changeset,
               field: :invite_code,
               message: "초대 코드 확인 중 오류가 발생했습니다"

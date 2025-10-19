@@ -24,13 +24,6 @@ defmodule Gongu.Groups.Group do
 
       change set_attribute(:creator_id, actor(:id))
 
-      # 초대 코드 자동 생성
-      change fn changeset, _context ->
-        invite_code = generate_invite_code()
-        Ash.Changeset.change_attribute(changeset, :invite_code, invite_code)
-      end
-
-      # 그룹을 생성하면 생성자를 자동으로 관리자로 추가
       change after_action(fn changeset, group, context ->
                creator_id = group.creator_id
 
@@ -95,12 +88,6 @@ defmodule Gongu.Groups.Group do
       public? true
     end
 
-    attribute :invite_code, :string do
-      description "그룹 초대 코드"
-      public? true
-      allow_nil? true
-    end
-
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
@@ -114,6 +101,10 @@ defmodule Gongu.Groups.Group do
       destination_attribute :group_id
     end
 
+    has_many :invitations, Gongu.Groups.Invitation do
+      destination_attribute :group_id
+    end
+
     many_to_many :members, Gongu.Accounts.User do
       through Gongu.Groups.GroupMembership
       source_attribute_on_join_resource :group_id
@@ -123,15 +114,5 @@ defmodule Gongu.Groups.Group do
 
   identities do
     identity :unique_name_per_creator, [:name, :creator_id]
-    identity :unique_invite_code, [:invite_code]
-  end
-
-  # 초대 코드 생성 함수
-  defp generate_invite_code do
-    # 8자리 랜덤 문자열 생성 (대문자, 소문자, 숫자)
-    :crypto.strong_rand_bytes(6)
-    |> Base.url_encode64(padding: false)
-    |> String.slice(0, 8)
-    |> String.upcase()
   end
 end

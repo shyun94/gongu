@@ -4,16 +4,16 @@
 
 
 export type UUID = string;
+export type UtcDateTimeUsec = string;
 
 // GonguGroupsGroup Schema
 export type GonguGroupsGroupResourceSchema = {
   __type: "Resource";
-  __primitiveFields: "id" | "name" | "description" | "creatorId" | "inviteCode";
+  __primitiveFields: "id" | "name" | "description" | "creatorId";
   id: UUID;
   name: string;
   description: string | null;
   creatorId: UUID;
-  inviteCode: string | null;
 };
 
 
@@ -28,6 +28,22 @@ export type GonguGroupsGroupMembershipResourceSchema = {
   role: "admin" | "member";
   status: "active" | "pending" | "inactive";
   invitedById: UUID | null;
+};
+
+
+
+// GonguGroupsInvitation Schema
+export type GonguGroupsInvitationResourceSchema = {
+  __type: "Resource";
+  __primitiveFields: "id" | "code" | "createdById" | "usedById" | "status" | "expiresAt" | "usedAt" | "groupId";
+  id: UUID;
+  code: string;
+  createdById: UUID;
+  usedById: UUID | null;
+  status: "pending" | "accepted" | "expired";
+  expiresAt: UtcDateTimeUsec;
+  usedAt: UtcDateTimeUsec | null;
+  groupId: UUID;
 };
 
 
@@ -65,12 +81,6 @@ export type GonguGroupsGroupFilterInput = {
     eq?: UUID;
     notEq?: UUID;
     in?: Array<UUID>;
-  };
-
-  inviteCode?: {
-    eq?: string;
-    notEq?: string;
-    in?: Array<string>;
   };
 
 
@@ -112,6 +122,70 @@ export type GonguGroupsGroupMembershipFilterInput = {
   };
 
   invitedById?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+
+
+};
+export type GonguGroupsInvitationFilterInput = {
+  and?: Array<GonguGroupsInvitationFilterInput>;
+  or?: Array<GonguGroupsInvitationFilterInput>;
+  not?: Array<GonguGroupsInvitationFilterInput>;
+
+  id?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  code?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  createdById?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  usedById?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  status?: {
+    eq?: "pending" | "accepted" | "expired";
+    notEq?: "pending" | "accepted" | "expired";
+    in?: Array<"pending" | "accepted" | "expired">;
+  };
+
+  expiresAt?: {
+    eq?: UtcDateTimeUsec;
+    notEq?: UtcDateTimeUsec;
+    greaterThan?: UtcDateTimeUsec;
+    greaterThanOrEqual?: UtcDateTimeUsec;
+    lessThan?: UtcDateTimeUsec;
+    lessThanOrEqual?: UtcDateTimeUsec;
+    in?: Array<UtcDateTimeUsec>;
+  };
+
+  usedAt?: {
+    eq?: UtcDateTimeUsec;
+    notEq?: UtcDateTimeUsec;
+    greaterThan?: UtcDateTimeUsec;
+    greaterThanOrEqual?: UtcDateTimeUsec;
+    lessThan?: UtcDateTimeUsec;
+    lessThanOrEqual?: UtcDateTimeUsec;
+    in?: Array<UtcDateTimeUsec>;
+  };
+
+  groupId?: {
     eq?: UUID;
     notEq?: UUID;
     in?: Array<UUID>;
@@ -1555,6 +1629,128 @@ export async function validateLeaveGroup(
 
   const result = await response.json();
   return result as ValidateLeaveGroupResult;
+}
+
+
+export type CreateInvitationInput = {
+  groupId: UUID;
+};
+
+export type CreateInvitationValidationErrors = {
+  groupId?: string[];
+};
+
+export type CreateInvitationFields = UnifiedFieldSelection<GonguGroupsInvitationResourceSchema>[];
+
+type InferCreateInvitationResult<
+  Fields extends CreateInvitationFields,
+> = InferResult<GonguGroupsInvitationResourceSchema, Fields>;
+
+export type CreateInvitationResult<Fields extends CreateInvitationFields> = | { success: true; data: InferCreateInvitationResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function createInvitation<Fields extends CreateInvitationFields>(
+  config: {
+  input: CreateInvitationInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<CreateInvitationResult<Fields>> {
+  const payload = {
+    action: "create_invitation",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as CreateInvitationResult<Fields>;
+}
+
+
+export type ValidateCreateInvitationResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateCreateInvitation(
+  config: {
+  input: CreateInvitationInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateCreateInvitationResult> {
+  const payload = {
+    action: "create_invitation",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateCreateInvitationResult;
 }
 
 

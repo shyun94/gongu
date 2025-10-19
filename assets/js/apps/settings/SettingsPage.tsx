@@ -1,36 +1,24 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Link } from "@tanstack/react-router";
-
-function generateInviteCode(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no easily-confused chars
-  const length = 8;
-  let code = "";
-  for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * alphabet.length);
-    code += alphabet[idx];
-  }
-  return code;
-}
+import { createInvitation, buildCSRFHeaders } from "../../ash_rpc";
 
 export const SettingsPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState<string>("");
-  const [copied, setCopied] = useState<boolean>(false);
+  const handleGenerate = useCallback(async () => {
+    const result = await createInvitation({
+      input: {
+        groupId: "2bf58a66-df68-4dd6-b1cd-3f550e0e6280",
+      },
+      fields: ["code"],
+      headers: buildCSRFHeaders(),
+    });
 
-  const handleGenerate = useCallback(() => {
-    setInviteCode(generateInviteCode());
-    setCopied(false);
-  }, []);
-
-  const handleCopy = useCallback(async () => {
-    if (!inviteCode) return;
-    try {
-      await navigator.clipboard.writeText(inviteCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (e) {
-      // noop
+    if (result.success && result.data) {
+      setInviteCode(result.data.code || "");
+      navigator.clipboard.writeText(result.data.code || "");
+      // toast.success("초대 코드가 복사되었습니다.");
     }
-  }, [inviteCode]);
+  }, []);
 
   return (
     <div className="w-full h-full bg-white">
@@ -58,24 +46,16 @@ export const SettingsPage: React.FC = () => {
           </p>
 
           <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              value={inviteCode}
-              placeholder="생성된 코드가 여기에 표시됩니다"
-              readOnly
-              className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none"
-            />
+            <div className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none">
+              {inviteCode}
+            </div>
             <button
               onClick={() => {
-                if (!inviteCode) {
-                  handleGenerate();
-                  return;
-                }
-                handleCopy();
+                handleGenerate();
               }}
               className="w-full px-4 py-3 rounded-md bg-blue-600 text-white text-center font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none"
             >
-              {inviteCode ? (copied ? "복사됨" : "복사") : "코드 생성"}
+              초대 코드 생성
             </button>
           </div>
         </section>
