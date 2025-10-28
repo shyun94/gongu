@@ -43,11 +43,14 @@ defmodule GonguWeb.Router do
 
     # React 앱 메인 페이지 (인증 필요)
     get "/", PageController, :index
-    get "/onboarding", PageController, :index
-    get "/settings", PageController, :index
+    get "/onboarding", PageController, :onboarding
+    get "/settings", PageController, :settings
 
     # Budget Calendar 페이지 (인증 필요)
-    get "/budget-calendar", PageController, :index
+    get "/budget-calendar", PageController, :budget_calendar
+
+    # Groups 페이지 (인증 필요)
+    get "/groups", PageController, :groups
 
     # OAuth 인증 라우트 (자동 생성됨)
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"

@@ -6,7 +6,6 @@ import {
   RouterProvider,
   Outlet,
 } from "@tanstack/react-router";
-import { IndexPage } from "./apps/IndexPage";
 import { OnboardingPage } from "./apps/OnboardingPage";
 import { GroupsPage } from "./apps/group/GroupsPage";
 import { BudgetCalendarPage } from "@/apps/budget/BudgetCalendarPage";
@@ -15,13 +14,6 @@ import { SettingsPage } from "@/apps/settings/SettingsPage";
 // 루트 라우트 정의
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
-});
-
-// 인덱스 라우트 - 자동 리디렉션
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: IndexPage,
 });
 
 // 온보딩 라우트
@@ -54,7 +46,6 @@ const settingsRoute = createRoute({
 
 // 라우트 트리 구성
 const routeTree = rootRoute.addChildren([
-  indexRoute,
   onboardingRoute,
   groupsRoute,
   budgetCalendarRoute,
