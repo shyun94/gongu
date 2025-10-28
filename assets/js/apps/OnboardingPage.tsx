@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { createGroup, buildCSRFHeaders, joinWithInvitation } from "../ash_rpc";
+import { Button } from "@/components/ui/Button";
+import { ArrowLeft } from "lucide-react";
 
 export const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -121,11 +123,7 @@ export const OnboardingPage: React.FC = () => {
                 </p>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center mb-6"
-              >
+              <Button type="submit" disabled={loading} className="w-full">
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -134,18 +132,18 @@ export const OnboardingPage: React.FC = () => {
                 ) : (
                   "그룹 참여하기"
                 )}
-              </button>
+              </Button>
             </form>
 
             {/* 그룹 생성 옵션 */}
             <div className="text-center">
               <div className="border-t border-gray-200 pt-6">
-                <button
+                <Button
+                  variant={"link"}
                   onClick={() => setShowCreateForm(true)}
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                 >
                   그룹을 생성하시겠습니까?
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -154,28 +152,16 @@ export const OnboardingPage: React.FC = () => {
           <div>
             {/* 헤더 */}
             <div className="text-center mb-8">
-              <button
+              <Button
+                variant="link"
                 onClick={() => {
                   setShowCreateForm(false);
                   setError(null);
                 }}
-                className="text-blue-600 hover:text-blue-700 mb-4 flex items-center text-sm transition-colors mx-auto"
               >
-                <svg
-                  className="w-5 h-5 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+                <ArrowLeft />
                 뒤로 가기
-              </button>
+              </Button>
               <h2 className="text-2xl font-bold text-gray-800">
                 새 그룹 만들기
               </h2>
@@ -227,11 +213,7 @@ export const OnboardingPage: React.FC = () => {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
-                >
+                <Button type="submit" disabled={loading} className="w-full">
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -240,7 +222,7 @@ export const OnboardingPage: React.FC = () => {
                   ) : (
                     "그룹 만들기"
                   )}
-                </button>
+                </Button>
               </form>
             </div>
           </div>

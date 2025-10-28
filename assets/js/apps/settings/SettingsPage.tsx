@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { createInvitation, buildCSRFHeaders } from "../../ash_rpc";
+import { Button } from "@/components/ui/Button";
 
 export const SettingsPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState<string>("");
@@ -51,12 +52,7 @@ export const SettingsPage: React.FC = () => {
                 {inviteCode}
               </div>
             )}
-            <button
-              onClick={handleClickCodeGeneration}
-              className="w-full px-4 py-3 rounded-md bg-blue-600 text-white text-center font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none"
-            >
-              초대 코드 생성
-            </button>
+            <Button onClick={handleClickCodeGeneration}>초대 코드 생성</Button>
           </div>
         </section>
       </div>
