@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { createInvitation, buildCSRFHeaders } from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
 
 export const SettingsPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState<string>("");
@@ -17,7 +18,7 @@ export const SettingsPage: React.FC = () => {
     if (result.success && result.data) {
       setInviteCode(result.data.code || "");
       navigator.clipboard.writeText(result.data.code || "");
-      // toast.success("초대 코드가 복사되었습니다.");
+      toast.success("초대 코드가 복사되었습니다.");
     }
   }, []);
 
