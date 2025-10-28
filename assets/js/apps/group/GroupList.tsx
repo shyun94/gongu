@@ -25,7 +25,7 @@ export const GroupList: React.FC = () => {
       });
 
       if (result.success) {
-        setGroups(result.data.results as Group[]);
+        setGroups((result.data.results as Group[]) ?? []);
       } else {
         setError("그룹을 불러오는데 실패했습니다.");
       }
