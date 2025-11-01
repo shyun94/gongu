@@ -1,4 +1,4 @@
-<%= if @dev_mode do %>
+<%= if @show_email_login do %>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
     <div class="w-full max-w-md p-8 space-y-8">
       <%!-- 로고 & 헤더 --%>
@@ -18,67 +18,67 @@
         <p class="text-gray-500">개발용 계정 생성</p>
       </div>
 
-    <%!-- 회원가입 폼 --%>
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      <.form
-        for={%{}}
-        action="/auth/user/password/register"
-        method="post"
-        id="password-register-form"
-      >
-        <div class="space-y-4">
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-              이메일
-            </label>
-            <input
-              type="email"
-              name="user[email]"
-              id="email"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="test@example.com"
-              required
-            />
+      <%!-- 회원가입 폼 --%>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <.form
+          for={%{}}
+          action="/auth/user/password/register"
+          method="post"
+          id="password-register-form"
+        >
+          <div class="space-y-4">
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                이메일
+              </label>
+              <input
+                type="email"
+                name="user[email]"
+                id="email"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="test@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호
+              </label>
+              <input
+                type="password"
+                name="user[password]"
+                id="password"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="••••••••"
+                required
+              />
+              <p class="text-xs text-gray-500 mt-1">최소 8자 이상 입력해주세요</p>
+            </div>
+            <div>
+              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호 확인
+              </label>
+              <input
+                type="password"
+                name="user[password_confirmation]"
+                id="password_confirmation"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            >
+              가입하기
+            </button>
           </div>
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              name="user[password]"
-              id="password"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-            <p class="text-xs text-gray-500 mt-1">최소 8자 이상 입력해주세요</p>
-          </div>
-          <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호 확인
-            </label>
-            <input
-              type="password"
-              name="user[password_confirmation]"
-              id="password_confirmation"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-          >
-            가입하기
-          </button>
-        </div>
-      </.form>
-      <div class="mt-4 text-center">
-        <a href="/sign-in" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-          이미 계정이 있으신가요? 로그인
-        </a>
+        </.form>
+        <div class="mt-4 text-center">
+          <a href="/sign-in" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            이미 계정이 있으신가요? 로그인
+          </a>
         </div>
       </div>
     </div>

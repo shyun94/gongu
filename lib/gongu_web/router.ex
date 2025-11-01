@@ -56,8 +56,9 @@ defmodule GonguWeb.Router do
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
-    # 커스텀 로그인 페이지
+    # 커스텀 로그인/회원가입 페이지
     get "/sign-in", OAuthController, :sign_in
+    get "/sign-up", OAuthController, :sign_up
   end
 
   # RPC endpoints for AshTypescript
@@ -87,11 +88,6 @@ defmodule GonguWeb.Router do
 
       live_dashboard "/dashboard", metrics: GonguWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
-    end
-
-    scope "/", GonguWeb do
-      pipe_through :browser
-      get "/sign-up", OAuthController, :sign_up
     end
   end
 
