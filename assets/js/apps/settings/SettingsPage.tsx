@@ -1,15 +1,43 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { createInvitation, buildCSRFHeaders } from "../../ash_rpc";
+import {
+  createInvitation,
+  buildCSRFHeaders,
+  listMemberships,
+} from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 
 export const SettingsPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState<string>("");
+  const [groupId, setGroupId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 사용자가 속한 그룹 정보 가져오기
+    const fetchUserGroup = async () => {
+      const result = await listMemberships({
+        fields: ["groupId"],
+        headers: buildCSRFHeaders(),
+      });
+
+      if (result.success) {
+        // 첫 번째 그룹의 ID를 사용
+        setGroupId(result.data[0].groupId);
+      }
+    };
+
+    fetchUserGroup();
+  }, []);
+
   const handleClickCodeGeneration = useCallback(async () => {
+    if (!groupId) {
+      toast.error("그룹 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     const result = await createInvitation({
       input: {
-        groupId: "2bf58a66-df68-4dd6-b1cd-3f550e0e6280",
+        groupId: groupId,
       },
       fields: ["code"],
       headers: buildCSRFHeaders(),
@@ -19,8 +47,10 @@ export const SettingsPage: React.FC = () => {
       setInviteCode(result.data.code || "");
       navigator.clipboard.writeText(result.data.code || "");
       toast.success("초대 코드가 복사되었습니다.");
+    } else {
+      toast.error("초대 코드 생성에 실패했습니다.");
     }
-  }, []);
+  }, [groupId]);
 
   return (
     <div className="w-full h-full bg-white">
@@ -53,7 +83,9 @@ export const SettingsPage: React.FC = () => {
                 {inviteCode}
               </div>
             )}
-            <Button onClick={handleClickCodeGeneration}>초대 코드 생성</Button>
+            <Button onClick={handleClickCodeGeneration} disabled={!groupId}>
+              {groupId ? "초대 코드 생성" : "로딩 중..."}
+            </Button>
           </div>
         </section>
       </div>
