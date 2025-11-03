@@ -60,7 +60,12 @@ defmodule Gongu.Groups.GroupMembership do
                    |> Ash.read_one(action: :read, actor: context.actor) do
                 {:ok, nil} ->
                   # 가입되지 않았으면 그룹 ID 설정
-                  Ash.Changeset.change_attribute(changeset, :group_id, invitation.group_id)
+                  # invitation_id를 메타데이터로 저장하여 after_action에서 사용
+                  changeset
+                  |> Ash.Changeset.change_attribute(:group_id, invitation.group_id)
+                  |> Map.update(:metadata, %{invitation_id: invitation.id}, fn metadata ->
+                    Map.put(metadata, :invitation_id, invitation.id)
+                  end)
 
                 {:ok, _existing_membership} ->
                   # 이미 가입되어 있으면 에러
@@ -90,6 +95,39 @@ defmodule Gongu.Groups.GroupMembership do
             )
         end
       end
+
+      # 그룹 멤버십 생성 후 초대 코드를 사용됨으로 표시
+      change after_action(fn changeset, membership, context ->
+               invitation_id = get_in(changeset.metadata || %{}, [:invitation_id])
+
+               if invitation_id do
+                 require Ash.Query
+
+                 case Gongu.Groups.Invitation
+                      |> Ash.Query.filter(expr(id == ^invitation_id))
+                      |> Ash.read_one(action: :read, actor: context.actor) do
+                   {:ok, invitation} when not is_nil(invitation) ->
+                     Ash.update(
+                       invitation,
+                       %{
+                         used_by_id: membership.user_id,
+                         used_at: DateTime.utc_now(),
+                         status: :accepted
+                       },
+                       actor: context.actor
+                     )
+                     |> case do
+                       {:ok, _updated_invitation} -> {:ok, membership}
+                       {:error, _error} -> {:ok, membership}
+                     end
+
+                   _ ->
+                     {:ok, membership}
+                 end
+               else
+                 {:ok, membership}
+               end
+             end)
     end
 
     update :update_role do

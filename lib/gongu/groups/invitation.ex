@@ -11,7 +11,7 @@ defmodule Gongu.Groups.Invitation do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :update]
 
     create :create do
       description "새 초대 코드 생성"
@@ -39,6 +39,10 @@ defmodule Gongu.Groups.Invitation do
     end
 
     policy action_type(:read) do
+      authorize_if actor_present()
+    end
+
+    policy action_type(:update) do
       authorize_if actor_present()
     end
   end
