@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-router";
 import { JoinWithInvitationPage } from "./apps/(without-auth)/JoinWithInvitationPage";
 import { CreateGroupPage } from "./apps/(without-auth)/CreateGroupPage";
-import { GroupsPage } from "./apps/(with-auth)/group/GroupsPage";
 import { BudgetCalendarPage } from "@/apps/(with-auth)/budget/BudgetCalendarPage";
 import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
 
@@ -31,13 +30,6 @@ const createGroupRoute = createRoute({
   component: CreateGroupPage,
 });
 
-// 그룹 목록 라우트
-const groupsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/groups",
-  component: GroupsPage,
-});
-
 // Budget Calendar 라우트
 const budgetCalendarRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -56,7 +48,6 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   joinWithInvitationRoute,
   createGroupRoute,
-  groupsRoute,
   budgetCalendarRoute,
   settingsRoute,
 ]);
