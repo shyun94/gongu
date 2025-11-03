@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { createGroup, buildCSRFHeaders, joinWithInvitation } from "../ash_rpc";
+import {
+  createGroup,
+  buildCSRFHeaders,
+  joinWithInvitation,
+} from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 

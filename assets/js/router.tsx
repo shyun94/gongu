@@ -6,10 +6,10 @@ import {
   RouterProvider,
   Outlet,
 } from "@tanstack/react-router";
-import { OnboardingPage } from "./apps/OnboardingPage";
-import { GroupsPage } from "./apps/group/GroupsPage";
-import { BudgetCalendarPage } from "@/apps/budget/BudgetCalendarPage";
-import { SettingsPage } from "@/apps/settings/SettingsPage";
+import { OnboardingPage } from "./apps/(without-auth)/OnboardingPage";
+import { GroupsPage } from "./apps/(with-auth)/group/GroupsPage";
+import { BudgetCalendarPage } from "@/apps/(with-auth)/budget/BudgetCalendarPage";
+import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
 
 // 루트 라우트 정의
 const rootRoute = createRootRoute({

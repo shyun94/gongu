@@ -4,7 +4,7 @@ import {
   createInvitation,
   buildCSRFHeaders,
   listMemberships,
-} from "../../ash_rpc";
+} from "../../../ash_rpc";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 
