@@ -7,11 +7,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { InvitationSection } from "./InvitationSection";
+import { Button } from "@/components/ui/Button";
+import { LogOut } from "lucide-react";
 
 export const SettingsPage: React.FC = () => {
   return (
-    <div className="w-full h-full bg-white">
-      <div className="relative flex items-center justify-center p-3 border-b border-gray-200">
+    <div className="w-full h-screen bg-white flex flex-col">
+      <div className="relative flex items-center justify-center p-3 border-b border-gray-200 flex-shrink-0">
         <Link
           to="/budget-calendar"
           className="absolute left-3 top-1/2 -translate-y-1/2"
@@ -26,17 +28,31 @@ export const SettingsPage: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900">설정</h2>
       </div>
 
-      <div className="p-4">
-        <Accordion type="single" collapsible className="w-full">
+      <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          defaultValue="invitation"
+        >
           <AccordionItem value="invitation">
             <AccordionTrigger className="text-base font-medium text-gray-900">
-              초대코드
+              초대
             </AccordionTrigger>
             <AccordionContent>
               <InvitationSection />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        <Accordion type="single" collapsible className="w-full"></Accordion>
+        <div className="mt-auto">
+          <a href="/sign-out">
+            <Button variant={"destructive"} className="w-full">
+              <LogOut />
+              로그아웃
+            </Button>
+          </a>
+        </div>
       </div>
     </div>
   );
