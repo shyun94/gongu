@@ -50,12 +50,19 @@ export const useListInvitations = (options?: UseListInvitationsOptions) => {
       });
 
       if (result.success) {
+        let invitations: Invitation[] = [];
+
         if (Array.isArray(result.data)) {
-          return result.data;
+          invitations = result.data;
+        } else if (result.data?.results) {
+          invitations = result.data.results;
         }
-        if (result.data?.results) {
-          return result.data.results;
-        }
+
+        // 사용됨(accepted) 또는 만료됨(expired) 상태인 초대 코드는 제외
+        return invitations.filter(
+          (invitation) =>
+            invitation.status !== "accepted" && invitation.status !== "expired"
+        );
       }
 
       return [];
