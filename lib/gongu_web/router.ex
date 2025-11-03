@@ -43,7 +43,8 @@ defmodule GonguWeb.Router do
 
     # React 앱 메인 페이지 (인증 필요)
     get "/", PageController, :index
-    get "/onboarding", PageController, :onboarding
+    get "/join-with-invitation", PageController, :join_with_invitation
+    get "/create-group", PageController, :create_group
     get "/settings", PageController, :settings
 
     # Budget Calendar 페이지 (인증 필요)

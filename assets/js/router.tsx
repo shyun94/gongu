@@ -6,7 +6,8 @@ import {
   RouterProvider,
   Outlet,
 } from "@tanstack/react-router";
-import { OnboardingPage } from "./apps/(without-auth)/OnboardingPage";
+import { JoinWithInvitationPage } from "./apps/(without-auth)/JoinWithInvitationPage";
+import { CreateGroupPage } from "./apps/(without-auth)/CreateGroupPage";
 import { GroupsPage } from "./apps/(with-auth)/group/GroupsPage";
 import { BudgetCalendarPage } from "@/apps/(with-auth)/budget/BudgetCalendarPage";
 import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
@@ -16,11 +17,18 @@ const rootRoute = createRootRoute({
   component: () => <Outlet />,
 });
 
-// 온보딩 라우트
-const onboardingRoute = createRoute({
+// 초대 코드로 그룹 참여 라우트
+const joinWithInvitationRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/onboarding",
-  component: OnboardingPage,
+  path: "/join-with-invitation",
+  component: JoinWithInvitationPage,
+});
+
+// 그룹 생성 라우트
+const createGroupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/create-group",
+  component: CreateGroupPage,
 });
 
 // 그룹 목록 라우트
@@ -46,7 +54,8 @@ const settingsRoute = createRoute({
 
 // 라우트 트리 구성
 const routeTree = rootRoute.addChildren([
-  onboardingRoute,
+  joinWithInvitationRoute,
+  createGroupRoute,
   groupsRoute,
   budgetCalendarRoute,
   settingsRoute,

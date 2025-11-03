@@ -9,11 +9,15 @@ defmodule GonguWeb.PageController do
     if has_group?(user) do
       redirect(conn, to: ~p"/budget-calendar")
     else
-      redirect(conn, to: ~p"/onboarding")
+      redirect(conn, to: ~p"/join-with-invitation")
     end
   end
 
-  def onboarding(conn, _params) do
+  def join_with_invitation(conn, _params) do
+    render(conn, :index)
+  end
+
+  def create_group(conn, _params) do
     render(conn, :index)
   end
 
