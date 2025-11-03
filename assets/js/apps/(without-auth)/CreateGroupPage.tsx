@@ -1,36 +1,44 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  createGroup,
-  buildCSRFHeaders,
-} from "../../ash_rpc";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { createGroup, buildCSRFHeaders } from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { ArrowLeft } from "lucide-react";
+
+const createGroupSchema = z.object({
+  name: z.string().min(1, "그룹 이름을 입력해주세요."),
+  description: z.string().optional(),
+});
+
+type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export const CreateGroupPage: React.FC = () => {
   const navigate = useNavigate();
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupDescription, setNewGroupDescription] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const form = useForm<CreateGroupFormValues>({
+    resolver: zodResolver(createGroupSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
-  const handleCreateGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newGroupName.trim()) {
-      setError("그룹 이름을 입력해주세요.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
+  const onSubmit = async (values: CreateGroupFormValues) => {
     try {
       const result = await createGroup({
         fields: ["id", "name", "description", "creatorId"],
         input: {
-          name: newGroupName,
-          description: newGroupDescription || null,
+          name: values.name,
+          description: values.description || null,
         },
         headers: buildCSRFHeaders(),
       });
@@ -39,12 +47,14 @@ export const CreateGroupPage: React.FC = () => {
         // 그룹 생성 후 Budget Calendar 페이지로 이동
         navigate({ to: "/budget-calendar" });
       } else {
-        setError("그룹 생성에 실패했습니다.");
+        form.setError("root", {
+          message: "그룹 생성에 실패했습니다.",
+        });
       }
     } catch (err) {
-      setError("그룹 생성 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      form.setError("root", {
+        message: "그룹 생성 중 오류가 발생했습니다.",
+      });
     }
   };
 
@@ -57,77 +67,87 @@ export const CreateGroupPage: React.FC = () => {
             variant="link"
             onClick={() => {
               navigate({ to: "/join-with-invitation" });
-              setError(null);
+              form.clearErrors();
             }}
           >
             <ArrowLeft />
             뒤로 가기
           </Button>
-          <h2 className="text-2xl font-bold text-gray-800">
-            새 그룹 만들기
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">새 그룹 만들기</h2>
         </div>
 
         {/* 콘텐츠 영역 */}
         <div>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleCreateGroup}>
-            <div className="mb-6">
-              <label
-                htmlFor="groupName"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                그룹 이름 *
-              </label>
-              <input
-                type="text"
-                id="groupName"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                placeholder="예) 우리 가족"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div className="mb-8">
-              <label
-                htmlFor="groupDescription"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                설명 (선택사항)
-              </label>
-              <textarea
-                id="groupDescription"
-                value={newGroupDescription}
-                onChange={(e) => setNewGroupDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                placeholder="그룹에 대한 간단한 설명을 입력하세요"
-                rows={3}
-                disabled={loading}
-              />
-            </div>
-
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  생성 중...
-                </>
-              ) : (
-                "그룹 만들기"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              {form.formState.errors.root && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                  {form.formState.errors.root.message}
+                </div>
               )}
-            </Button>
-          </form>
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="mb-6">
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      그룹 이름 *
+                    </FormLabel>
+                    <FormControl>
+                      <input
+                        type="text"
+                        {...field}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                        placeholder="예) 우리 가족"
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="mb-8">
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      설명 (선택사항)
+                    </FormLabel>
+                    <FormControl>
+                      <textarea
+                        {...field}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                        placeholder="그룹에 대한 간단한 설명을 입력하세요"
+                        rows={3}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    생성 중...
+                  </>
+                ) : (
+                  "그룹 만들기"
+                )}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
   );
 };
-

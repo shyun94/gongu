@@ -1,31 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  joinWithInvitation,
-  buildCSRFHeaders,
-} from "../../ash_rpc";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { joinWithInvitation, buildCSRFHeaders } from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+
+const joinGroupSchema = z.object({
+  inviteCode: z.string().min(1, "초대 코드를 입력해주세요."),
+});
+
+type JoinGroupFormValues = z.infer<typeof joinGroupSchema>;
 
 export const JoinWithInvitationPage: React.FC = () => {
   const navigate = useNavigate();
-  const [inviteCode, setInviteCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const form = useForm<JoinGroupFormValues>({
+    resolver: zodResolver(joinGroupSchema),
+    defaultValues: {
+      inviteCode: "",
+    },
+  });
 
-  const handleJoinGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!inviteCode.trim()) {
-      setError("초대 코드를 입력해주세요.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
+  const onSubmit = async (values: JoinGroupFormValues) => {
     try {
       const result = await joinWithInvitation({
-        input: { inviteCode },
+        input: { inviteCode: values.inviteCode },
         fields: ["id", "groupId", "userId", "role", "status"],
         headers: buildCSRFHeaders(),
       });
@@ -33,14 +42,12 @@ export const JoinWithInvitationPage: React.FC = () => {
         // 그룹 가입 후 Budget Calendar 페이지로 이동
         navigate({ to: "/budget-calendar" });
       } else {
-        setError(
+        toast.error(
           result.errors?.[0]?.message || "그룹 가입 중 오류가 발생했습니다."
         );
       }
     } catch (err) {
-      setError("그룹 가입 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      toast.error("그룹 가입 중 오류가 발생했습니다.");
     }
   };
 
@@ -57,46 +64,49 @@ export const JoinWithInvitationPage: React.FC = () => {
             </p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleJoinGroup}>
-            <div className="mb-8">
-              <label
-                htmlFor="inviteCode"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                초대 코드 *
-              </label>
-              <input
-                type="text"
-                id="inviteCode"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                placeholder="초대 코드를 입력하세요"
-                disabled={loading}
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="inviteCode"
+                render={({ field }) => (
+                  <FormItem className="mb-8">
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      초대 코드 *
+                    </FormLabel>
+                    <FormControl>
+                      <input
+                        type="text"
+                        {...field}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                        placeholder="초대 코드를 입력하세요"
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-gray-500 mt-2">
+                      그룹 관리자로부터 받은 초대 코드를 입력해주세요
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-sm text-gray-500 mt-2">
-                그룹 관리자로부터 받은 초대 코드를 입력해주세요
-              </p>
-            </div>
 
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  가입 중...
-                </>
-              ) : (
-                "그룹 참여하기"
-              )}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    가입 중...
+                  </>
+                ) : (
+                  "그룹 참여하기"
+                )}
+              </Button>
+            </form>
+          </Form>
 
           {/* 그룹 생성 옵션 */}
           <div className="text-center">
@@ -114,4 +124,3 @@ export const JoinWithInvitationPage: React.FC = () => {
     </div>
   );
 };
-
