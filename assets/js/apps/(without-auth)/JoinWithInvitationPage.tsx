@@ -3,7 +3,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { joinWithInvitation, buildCSRFHeaders } from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
 import {
   Form,
@@ -15,6 +14,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { useJoinWithInvitation } from "./useJoinWithInvitation";
 
 const joinGroupSchema = z.object({
   inviteCode: z.string().min(1, "초대 코드를 입력해주세요."),
@@ -31,24 +31,17 @@ export const JoinWithInvitationPage: React.FC = () => {
     },
   });
 
+  const joinMutation = useJoinWithInvitation({
+    onSuccess: () => {
+      navigate({ to: "/budget-calendar" });
+    },
+    onError: (error) => {
+      toast.error(error.message || "그룹 가입 중 오류가 발생했습니다.");
+    },
+  });
+
   const onSubmit = async (values: JoinGroupFormValues) => {
-    try {
-      const result = await joinWithInvitation({
-        input: { inviteCode: values.inviteCode },
-        fields: ["id", "groupId", "userId", "role", "status"],
-        headers: buildCSRFHeaders(),
-      });
-      if (result.success) {
-        // 그룹 가입 후 Budget Calendar 페이지로 이동
-        navigate({ to: "/budget-calendar" });
-      } else {
-        toast.error(
-          result.errors?.[0]?.message || "그룹 가입 중 오류가 발생했습니다."
-        );
-      }
-    } catch (err) {
-      toast.error("그룹 가입 중 오류가 발생했습니다.");
-    }
+    joinMutation.mutate({ inviteCode: values.inviteCode });
   };
 
   return (
@@ -80,7 +73,7 @@ export const JoinWithInvitationPage: React.FC = () => {
                         {...field}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                         placeholder="초대 코드를 입력하세요"
-                        disabled={form.formState.isSubmitting}
+                        disabled={joinMutation.isPending}
                       />
                     </FormControl>
                     <FormDescription className="text-sm text-gray-500 mt-2">
@@ -93,10 +86,10 @@ export const JoinWithInvitationPage: React.FC = () => {
 
               <Button
                 type="submit"
-                disabled={form.formState.isSubmitting}
+                disabled={joinMutation.isPending}
                 className="w-full"
               >
-                {form.formState.isSubmitting ? (
+                {joinMutation.isPending ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     가입 중...

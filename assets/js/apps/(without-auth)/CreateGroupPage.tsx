@@ -3,7 +3,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createGroup, buildCSRFHeaders } from "../../ash_rpc";
 import { Button } from "@/components/ui/Button";
 import {
   Form,
@@ -14,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ArrowLeft } from "lucide-react";
+import { useCreateGroup } from "./useCreateGroup";
 
 const createGroupSchema = z.object({
   name: z.string().min(1, "그룹 이름을 입력해주세요."),
@@ -32,30 +32,22 @@ export const CreateGroupPage: React.FC = () => {
     },
   });
 
-  const onSubmit = async (values: CreateGroupFormValues) => {
-    try {
-      const result = await createGroup({
-        fields: ["id", "name", "description", "creatorId"],
-        input: {
-          name: values.name,
-          description: values.description || null,
-        },
-        headers: buildCSRFHeaders(),
-      });
-
-      if (result.success) {
-        // 그룹 생성 후 Budget Calendar 페이지로 이동
-        navigate({ to: "/budget-calendar" });
-      } else {
-        form.setError("root", {
-          message: "그룹 생성에 실패했습니다.",
-        });
-      }
-    } catch (err) {
+  const createMutation = useCreateGroup({
+    onSuccess: () => {
+      navigate({ to: "/budget-calendar" });
+    },
+    onError: (error) => {
       form.setError("root", {
-        message: "그룹 생성 중 오류가 발생했습니다.",
+        message: error.message || "그룹 생성 중 오류가 발생했습니다.",
       });
-    }
+    },
+  });
+
+  const onSubmit = async (values: CreateGroupFormValues) => {
+    createMutation.mutate({
+      name: values.name,
+      description: values.description || null,
+    });
   };
 
   return (
@@ -100,7 +92,7 @@ export const CreateGroupPage: React.FC = () => {
                         {...field}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                         placeholder="예) 우리 가족"
-                        disabled={form.formState.isSubmitting}
+                        disabled={createMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -122,7 +114,7 @@ export const CreateGroupPage: React.FC = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                         placeholder="그룹에 대한 간단한 설명을 입력하세요"
                         rows={3}
-                        disabled={form.formState.isSubmitting}
+                        disabled={createMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -132,10 +124,10 @@ export const CreateGroupPage: React.FC = () => {
 
               <Button
                 type="submit"
-                disabled={form.formState.isSubmitting}
+                disabled={createMutation.isPending}
                 className="w-full"
               >
-                {form.formState.isSubmitting ? (
+                {createMutation.isPending ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     생성 중...
