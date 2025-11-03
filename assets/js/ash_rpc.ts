@@ -1632,6 +1632,149 @@ export async function validateLeaveGroup(
 }
 
 
+export type ListInvitationsFields = UnifiedFieldSelection<GonguGroupsInvitationResourceSchema>[];
+
+type InferListInvitationsResult<
+  Fields extends ListInvitationsFields,
+> = {
+  results: Array<InferResult<GonguGroupsInvitationResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsInvitationResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type ListInvitationsResult<Fields extends ListInvitationsFields> = | { success: true; data: InferListInvitationsResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function listInvitations<Fields extends ListInvitationsFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsInvitationFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ListInvitationsResult<Fields>> {
+  const payload = {
+    action: "list_invitations",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ListInvitationsResult<Fields>;
+}
+
+
+export type ValidateListInvitationsResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateListInvitations(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateListInvitationsResult> {
+  const payload = {
+    action: "list_invitations"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateListInvitationsResult;
+}
+
+
 export type CreateInvitationInput = {
   groupId: UUID;
 };

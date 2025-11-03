@@ -23,6 +23,7 @@ defmodule Gongu.Groups do
     end
 
     resource Gongu.Groups.Invitation do
+      rpc_action :list_invitations, :read
       rpc_action :create_invitation, :create
     end
   end
