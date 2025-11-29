@@ -37,6 +37,50 @@ defmodule Gongu.Groups.Event do
       ]
 
       change set_attribute(:created_by_id, actor(:id))
+
+      change fn changeset, context ->
+        require Ash.Query
+
+        calendar_id = Ash.Changeset.get_attribute(changeset, :calendar_id)
+        actor_id = context.actor.id
+
+        case Gongu.Groups.Calendar
+             |> Ash.Query.filter(expr(id == ^calendar_id))
+             |> Ash.read_one(action: :read, actor: context.actor) do
+          {:ok, calendar} ->
+            if calendar.owner_id == actor_id do
+              changeset
+            else
+              case calendar.group_id do
+                nil ->
+                  Ash.Changeset.add_error(changeset,
+                    field: :calendar_id,
+                    message: "이 캘린더에 일정을 추가할 권한이 없습니다"
+                  )
+
+                group_id ->
+                  case Gongu.Groups.GroupMembership
+                       |> Ash.Query.filter(expr(group_id == ^group_id and user_id == ^actor_id))
+                       |> Ash.read_one(action: :read, actor: context.actor) do
+                    {:ok, _membership} ->
+                      changeset
+
+                    _ ->
+                      Ash.Changeset.add_error(changeset,
+                        field: :calendar_id,
+                        message: "이 캘린더에 일정을 추가할 권한이 없습니다"
+                      )
+                  end
+              end
+            end
+
+          {:error, _} ->
+            Ash.Changeset.add_error(changeset,
+              field: :calendar_id,
+              message: "캘린더를 찾을 수 없습니다"
+            )
+        end
+      end
     end
 
     update :update do
@@ -60,10 +104,11 @@ defmodule Gongu.Groups.Event do
       authorize_if expr(calendar.group.memberships.user_id == ^actor(:id))
     end
 
-    # 일정 생성은 캘린더 소유자 또는 그룹 멤버만 가능
+    # 일정 생성은 인증된 사용자만 가능
+    # create 액션에서는 relationship 필터를 사용할 수 없으므로,
+    # 인증된 사용자만 허용하고 실제 권한 검사는 application 레벨에서 처리
     policy action_type(:create) do
-      authorize_if expr(calendar.owner_id == ^actor(:id))
-      authorize_if expr(calendar.group.memberships.user_id == ^actor(:id))
+      authorize_if actor_present()
     end
 
     # 일정 수정은 생성자 또는 캘린더 소유자만 가능

@@ -1,10 +1,22 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useListCalendars } from "./useListCalendars";
 import { useListEvents } from "./useListEvents";
 import { Button } from "@/components/ui/button";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths } from "date-fns";
+import { CreateEventDialog } from "./CreateEventDialog";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  addMonths,
+  subMonths,
+  setHours,
+  setMinutes,
+} from "date-fns";
 import { ko } from "date-fns/locale";
 
 type Calendar = {
@@ -24,11 +36,17 @@ type Event = {
 
 export const CalendarPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [savedTimeRange, setSavedTimeRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   const { data: calendars, isLoading: calendarsLoading } = useListCalendars();
-  
+
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  
+
   const { data: events, isLoading: eventsLoading } = useListEvents({
     startDate: monthStart,
     endDate: monthEnd,
@@ -38,13 +56,13 @@ export const CalendarPage: React.FC = () => {
   const days = useMemo(() => {
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
-    
+
     // 시작일의 요일 (0=일요일)
     const startDay = start.getDay();
-    
+
     // 끝일의 요일
     const endDay = end.getDay();
-    
+
     // 그리드를 채우기 위해 이전 달의 날짜 추가
     const daysInMonth = eachDayOfInterval({ start, end });
     const previousMonthDays = Array.from({ length: startDay }, (_, i) => {
@@ -52,33 +70,33 @@ export const CalendarPage: React.FC = () => {
       date.setDate(date.getDate() - startDay + i);
       return date;
     });
-    
+
     // 그리드를 채우기 위해 다음 달의 날짜 추가
     const nextMonthDays = Array.from({ length: 6 - endDay }, (_, i) => {
       const date = new Date(end);
       date.setDate(date.getDate() + i + 1);
       return date;
     });
-    
+
     return [...previousMonthDays, ...daysInMonth, ...nextMonthDays];
   }, [currentDate]);
 
   // 날짜별 이벤트 그룹화
   const eventsByDate = useMemo(() => {
     const grouped: Record<string, Event[]> = {};
-    
+
     if (events) {
       events.forEach((event) => {
         const eventDate = new Date(event.startTime);
         const dateKey = format(eventDate, "yyyy-MM-dd");
-        
+
         if (!grouped[dateKey]) {
           grouped[dateKey] = [];
         }
         grouped[dateKey].push(event);
       });
     }
-    
+
     return grouped;
   }, [events]);
 
@@ -95,8 +113,23 @@ export const CalendarPage: React.FC = () => {
     setCurrentDate(addMonths(currentDate, 1));
   };
 
-  const goToToday = () => {
-    setCurrentDate(new Date());
+  const handleDateClick = (day: Date) => {
+    // 클릭한 날짜의 9시부터 10시까지 기본 설정
+    const startDate = setHours(setMinutes(day, 0), 9);
+    const endDate = setHours(setMinutes(day, 0), 10);
+
+    // 시간 범위 저장
+    setSavedTimeRange({ start: startDate, end: endDate });
+
+    // 다이얼로그 열기
+    setSelectedEvent(null);
+    setDialogOpen(true);
+  };
+
+  const handleEventClick = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation(); // 날짜 클릭 이벤트 방지
+    setSelectedEvent(event);
+    setDialogOpen(true);
   };
 
   if (calendarsLoading || eventsLoading) {
@@ -109,43 +142,45 @@ export const CalendarPage: React.FC = () => {
 
   return (
     <div className="w-full h-screen bg-white flex flex-col">
+      {/* 일정 추가/수정 다이얼로그 */}
+      <CreateEventDialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            // 다이얼로그가 닫힐 때 저장된 시간 범위 초기화
+            setSavedTimeRange(null);
+          }
+        }}
+        calendars={calendars || []}
+        defaultStartTime={savedTimeRange?.start}
+        defaultEndTime={savedTimeRange?.end}
+        event={selectedEvent}
+      />
+
       {/* 헤더 */}
       <div className="relative flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={goToPreviousMonth}
-            aria-label="이전 달"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={goToNextMonth}
-            aria-label="다음 달"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToToday}
-          >
-            오늘
-          </Button>
-        </div>
-        
-        <h2 className="text-lg font-semibold text-gray-900 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <Button
+          variant="outline"
+          size="icon-sm"
+          onClick={goToPreviousMonth}
+          aria-label="이전 달"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        <h2 className="text-lg font-semibold text-gray-900">
           {format(currentDate, "yyyy년 M월", { locale: ko })}
         </h2>
-        
-        <Link to="/settings">
-          <Button variant="ghost" size="icon-sm" aria-label="설정">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </Link>
+
+        <Button
+          variant="outline"
+          size="icon-sm"
+          onClick={goToNextMonth}
+          aria-label="다음 달"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* 캘린더 그리드 */}
@@ -157,7 +192,11 @@ export const CalendarPage: React.FC = () => {
               key={day}
               className={[
                 "text-center text-sm font-medium py-2",
-                idx === 0 ? "text-red-500" : idx === 6 ? "text-blue-500" : "text-gray-700"
+                idx === 0
+                  ? "text-red-500"
+                  : idx === 6
+                  ? "text-blue-500"
+                  : "text-gray-700",
               ].join(" ")}
             >
               {day}
@@ -171,14 +210,16 @@ export const CalendarPage: React.FC = () => {
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isTodayDate = isToday(day);
             const dayOfWeek = day.getDay();
-            
+
             return (
               <div
                 key={idx}
                 className={[
-                  "min-h-24 border border-gray-200 rounded-lg p-2 flex flex-col",
+                  "min-h-24 border border-gray-200 rounded-lg p-2 flex flex-col cursor-pointer transition-colors",
                   !isCurrentMonth && "bg-gray-50",
+                  "hover:bg-gray-100",
                 ].join(" ")}
+                onClick={() => handleDateClick(day)}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span
@@ -198,7 +239,7 @@ export const CalendarPage: React.FC = () => {
                     {format(day, "d")}
                   </span>
                 </div>
-                
+
                 {/* 이벤트 목록 */}
                 <div className="flex-1 overflow-hidden space-y-1">
                   {dayEvents.slice(0, 3).map((event) => {
@@ -206,12 +247,17 @@ export const CalendarPage: React.FC = () => {
                     return (
                       <div
                         key={event.id}
-                        className="text-xs px-2 py-1 rounded truncate"
+                        className="text-xs px-2 py-1 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
                         style={{
-                          backgroundColor: calendar?.color ? `${calendar.color}20` : "#e5e7eb",
-                          borderLeft: `3px solid ${calendar?.color || "#9ca3af"}`,
+                          backgroundColor: calendar?.color
+                            ? `${calendar.color}20`
+                            : "#e5e7eb",
+                          borderLeft: `3px solid ${
+                            calendar?.color || "#9ca3af"
+                          }`,
                         }}
                         title={event.title}
+                        onClick={(e) => handleEventClick(event, e)}
                       >
                         {event.allDay ? (
                           <span className="font-medium">{event.title}</span>
