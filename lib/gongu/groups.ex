@@ -26,6 +26,14 @@ defmodule Gongu.Groups do
       rpc_action :list_invitations, :read
       rpc_action :create_invitation, :create
     end
+
+    resource Gongu.Groups.Calendar do
+      rpc_action :list_calendars, :read
+      rpc_action :get_calendar, :get_calendar
+      rpc_action :create_calendar, :create
+      rpc_action :update_calendar, :update
+      rpc_action :delete_calendar, :destroy
+    end
   end
 
   resources do

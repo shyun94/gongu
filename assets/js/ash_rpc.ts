@@ -48,6 +48,22 @@ export type GonguGroupsInvitationResourceSchema = {
 
 
 
+// GonguGroupsCalendar Schema
+export type GonguGroupsCalendarResourceSchema = {
+  __type: "Resource";
+  __primitiveFields: "id" | "name" | "description" | "color" | "timezone" | "visibility" | "ownerId" | "groupId";
+  id: UUID;
+  name: string;
+  description: string | null;
+  color: string | null;
+  timezone: string | null;
+  visibility: "public" | "private";
+  ownerId: UUID;
+  groupId: UUID | null;
+};
+
+
+
 
 
 
@@ -183,6 +199,62 @@ export type GonguGroupsInvitationFilterInput = {
     lessThan?: UtcDateTimeUsec;
     lessThanOrEqual?: UtcDateTimeUsec;
     in?: Array<UtcDateTimeUsec>;
+  };
+
+  groupId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+
+
+};
+export type GonguGroupsCalendarFilterInput = {
+  and?: Array<GonguGroupsCalendarFilterInput>;
+  or?: Array<GonguGroupsCalendarFilterInput>;
+  not?: Array<GonguGroupsCalendarFilterInput>;
+
+  id?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  name?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  description?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  color?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  timezone?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  visibility?: {
+    eq?: "public" | "private";
+    notEq?: "public" | "private";
+    in?: Array<"public" | "private">;
+  };
+
+  ownerId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
   };
 
   groupId?: {
@@ -1894,6 +1966,644 @@ export async function validateCreateInvitation(
 
   const result = await response.json();
   return result as ValidateCreateInvitationResult;
+}
+
+
+export type ListCalendarsFields = UnifiedFieldSelection<GonguGroupsCalendarResourceSchema>[];
+
+type InferListCalendarsResult<
+  Fields extends ListCalendarsFields,
+> = {
+  results: Array<InferResult<GonguGroupsCalendarResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsCalendarResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type ListCalendarsResult<Fields extends ListCalendarsFields> = | { success: true; data: InferListCalendarsResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function listCalendars<Fields extends ListCalendarsFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsCalendarFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ListCalendarsResult<Fields>> {
+  const payload = {
+    action: "list_calendars",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ListCalendarsResult<Fields>;
+}
+
+
+export type ValidateListCalendarsResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateListCalendars(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateListCalendarsResult> {
+  const payload = {
+    action: "list_calendars"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateListCalendarsResult;
+}
+
+
+export type GetCalendarInput = {
+  id: UUID;
+};
+
+export type GetCalendarValidationErrors = {
+  id?: string[];
+};
+
+export type GetCalendarFields = UnifiedFieldSelection<GonguGroupsCalendarResourceSchema>[];
+
+type InferGetCalendarResult<
+  Fields extends GetCalendarFields,
+> = InferResult<GonguGroupsCalendarResourceSchema, Fields> | null;
+
+export type GetCalendarResult<Fields extends GetCalendarFields> = | { success: true; data: InferGetCalendarResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function getCalendar<Fields extends GetCalendarFields>(
+  config: {
+  input: GetCalendarInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<GetCalendarResult<Fields>> {
+  const payload = {
+    action: "get_calendar",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as GetCalendarResult<Fields>;
+}
+
+
+export type ValidateGetCalendarResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateGetCalendar(
+  config: {
+  input: GetCalendarInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateGetCalendarResult> {
+  const payload = {
+    action: "get_calendar",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateGetCalendarResult;
+}
+
+
+export type CreateCalendarInput = {
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  timezone?: string | null;
+  visibility?: "public" | "private";
+  groupId?: UUID | null;
+};
+
+export type CreateCalendarValidationErrors = {
+  name?: string[];
+  description?: string[];
+  color?: string[];
+  timezone?: string[];
+  visibility?: string[];
+  groupId?: string[];
+};
+
+export type CreateCalendarFields = UnifiedFieldSelection<GonguGroupsCalendarResourceSchema>[];
+
+type InferCreateCalendarResult<
+  Fields extends CreateCalendarFields,
+> = InferResult<GonguGroupsCalendarResourceSchema, Fields>;
+
+export type CreateCalendarResult<Fields extends CreateCalendarFields> = | { success: true; data: InferCreateCalendarResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function createCalendar<Fields extends CreateCalendarFields>(
+  config: {
+  input: CreateCalendarInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<CreateCalendarResult<Fields>> {
+  const payload = {
+    action: "create_calendar",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as CreateCalendarResult<Fields>;
+}
+
+
+export type ValidateCreateCalendarResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateCreateCalendar(
+  config: {
+  input: CreateCalendarInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateCreateCalendarResult> {
+  const payload = {
+    action: "create_calendar",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateCreateCalendarResult;
+}
+
+
+export type UpdateCalendarInput = {
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  timezone?: string | null;
+  visibility?: "public" | "private";
+};
+
+export type UpdateCalendarValidationErrors = {
+  name?: string[];
+  description?: string[];
+  color?: string[];
+  timezone?: string[];
+  visibility?: string[];
+};
+
+export type UpdateCalendarFields = UnifiedFieldSelection<GonguGroupsCalendarResourceSchema>[];
+
+type InferUpdateCalendarResult<
+  Fields extends UpdateCalendarFields,
+> = InferResult<GonguGroupsCalendarResourceSchema, Fields>;
+
+export type UpdateCalendarResult<Fields extends UpdateCalendarFields> = | { success: true; data: InferUpdateCalendarResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function updateCalendar<Fields extends UpdateCalendarFields>(
+  config: {
+  primaryKey: UUID;
+  input: UpdateCalendarInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<UpdateCalendarResult<Fields>> {
+  const payload = {
+    action: "update_calendar",
+    primaryKey: config.primaryKey,
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as UpdateCalendarResult<Fields>;
+}
+
+
+export type ValidateUpdateCalendarResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateUpdateCalendar(
+  config: {
+  primaryKey: string;
+  input: UpdateCalendarInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateUpdateCalendarResult> {
+  const payload = {
+    action: "update_calendar",
+    primaryKey: config.primaryKey,
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateUpdateCalendarResult;
+}
+
+
+
+export type DeleteCalendarResult = | { success: true; data: {} }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function deleteCalendar(
+  config: {
+  primaryKey: UUID;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<DeleteCalendarResult> {
+  const payload = {
+    action: "delete_calendar",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as DeleteCalendarResult;
+}
+
+
+export type ValidateDeleteCalendarResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateDeleteCalendar(
+  config: {
+  primaryKey: string;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateDeleteCalendarResult> {
+  const payload = {
+    action: "delete_calendar",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateDeleteCalendarResult;
 }
 
 
