@@ -9,6 +9,7 @@ import {
 import { JoinWithInvitationPage } from "./apps/(without-auth)/JoinWithInvitationPage";
 import { CreateGroupPage } from "./apps/(without-auth)/CreateGroupPage";
 import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
+import { CalendarPage } from "@/apps/(with-auth)/CalendarPage";
 
 // 루트 라우트 정의
 const rootRoute = createRootRoute({
@@ -36,11 +37,19 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
+// 캘린더 라우트
+const calendarRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/calendar",
+  component: CalendarPage,
+});
+
 // 라우트 트리 구성
 const routeTree = rootRoute.addChildren([
   joinWithInvitationRoute,
   createGroupRoute,
   settingsRoute,
+  calendarRoute,
 ]);
 
 // 라우터 생성

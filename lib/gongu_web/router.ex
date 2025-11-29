@@ -47,8 +47,8 @@ defmodule GonguWeb.Router do
     get "/create-group", PageController, :create_group
     get "/settings", PageController, :settings
 
-    # Groups 페이지 (인증 필요)
-    get "/groups", PageController, :groups
+    # Calendar 페이지 (인증 필요)
+    get "/calendar", PageController, :calendar
 
     # OAuth 인증 라우트 (자동 생성됨)
     auth_routes AuthController, Gongu.Accounts.User, path: "/auth"
