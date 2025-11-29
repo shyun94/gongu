@@ -4,6 +4,7 @@
 
 
 export type UUID = string;
+export type UtcDateTime = string;
 export type UtcDateTimeUsec = string;
 
 // GonguGroupsGroup Schema
@@ -60,6 +61,25 @@ export type GonguGroupsCalendarResourceSchema = {
   visibility: "public" | "private";
   ownerId: UUID;
   groupId: UUID | null;
+};
+
+
+
+// GonguGroupsEvent Schema
+export type GonguGroupsEventResourceSchema = {
+  __type: "Resource";
+  __primitiveFields: "id" | "title" | "description" | "startTime" | "endTime" | "allDay" | "location" | "calendarId" | "recurrenceRule" | "status" | "createdById";
+  id: UUID;
+  title: string;
+  description: string | null;
+  startTime: UtcDateTime;
+  endTime: UtcDateTime;
+  allDay: boolean;
+  location: string | null;
+  calendarId: UUID;
+  recurrenceRule: string | null;
+  status: "confirmed" | "tentative" | "cancelled";
+  createdById: UUID;
 };
 
 
@@ -258,6 +278,87 @@ export type GonguGroupsCalendarFilterInput = {
   };
 
   groupId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+
+
+};
+export type GonguGroupsEventFilterInput = {
+  and?: Array<GonguGroupsEventFilterInput>;
+  or?: Array<GonguGroupsEventFilterInput>;
+  not?: Array<GonguGroupsEventFilterInput>;
+
+  id?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  title?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  description?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  startTime?: {
+    eq?: UtcDateTime;
+    notEq?: UtcDateTime;
+    greaterThan?: UtcDateTime;
+    greaterThanOrEqual?: UtcDateTime;
+    lessThan?: UtcDateTime;
+    lessThanOrEqual?: UtcDateTime;
+    in?: Array<UtcDateTime>;
+  };
+
+  endTime?: {
+    eq?: UtcDateTime;
+    notEq?: UtcDateTime;
+    greaterThan?: UtcDateTime;
+    greaterThanOrEqual?: UtcDateTime;
+    lessThan?: UtcDateTime;
+    lessThanOrEqual?: UtcDateTime;
+    in?: Array<UtcDateTime>;
+  };
+
+  allDay?: {
+    eq?: boolean;
+    notEq?: boolean;
+  };
+
+  location?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  calendarId?: {
+    eq?: UUID;
+    notEq?: UUID;
+    in?: Array<UUID>;
+  };
+
+  recurrenceRule?: {
+    eq?: string;
+    notEq?: string;
+    in?: Array<string>;
+  };
+
+  status?: {
+    eq?: "confirmed" | "tentative" | "cancelled";
+    notEq?: "confirmed" | "tentative" | "cancelled";
+    in?: Array<"confirmed" | "tentative" | "cancelled">;
+  };
+
+  createdById?: {
     eq?: UUID;
     notEq?: UUID;
     in?: Array<UUID>;
@@ -2604,6 +2705,656 @@ export async function validateDeleteCalendar(
 
   const result = await response.json();
   return result as ValidateDeleteCalendarResult;
+}
+
+
+export type ListEventsFields = UnifiedFieldSelection<GonguGroupsEventResourceSchema>[];
+
+type InferListEventsResult<
+  Fields extends ListEventsFields,
+> = {
+  results: Array<InferResult<GonguGroupsEventResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  count?: number | null;
+  type: "offset";
+} | {
+  results: Array<InferResult<GonguGroupsEventResourceSchema, Fields>>;
+  hasMore: boolean;
+  limit: number;
+  after: string | null;
+  before: string | null;
+  previousPage: string;
+  nextPage: string;
+  count?: number | null;
+  type: "keyset";
+};
+
+export type ListEventsResult<Fields extends ListEventsFields> = | { success: true; data: InferListEventsResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function listEvents<Fields extends ListEventsFields>(
+  config: {
+  fields: Fields;
+  filter?: GonguGroupsEventFilterInput;
+  sort?: string;
+  page?: (
+    {
+      limit?: number;
+      offset?: number;
+      count?: boolean;
+    } | {
+      limit?: number;
+      after?: string;
+      before?: string;
+    }
+  );
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ListEventsResult<Fields>> {
+  const payload = {
+    action: "list_events",
+    fields: config.fields,
+    ...(config.filter && { filter: config.filter }),
+    ...(config.sort && { sort: config.sort }),
+    ...(config.page && { page: config.page })
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ListEventsResult<Fields>;
+}
+
+
+export type ValidateListEventsResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateListEvents(
+  config: {
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateListEventsResult> {
+  const payload = {
+    action: "list_events"
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateListEventsResult;
+}
+
+
+export type GetEventInput = {
+  id: UUID;
+};
+
+export type GetEventValidationErrors = {
+  id?: string[];
+};
+
+export type GetEventFields = UnifiedFieldSelection<GonguGroupsEventResourceSchema>[];
+
+type InferGetEventResult<
+  Fields extends GetEventFields,
+> = InferResult<GonguGroupsEventResourceSchema, Fields> | null;
+
+export type GetEventResult<Fields extends GetEventFields> = | { success: true; data: InferGetEventResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function getEvent<Fields extends GetEventFields>(
+  config: {
+  input: GetEventInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<GetEventResult<Fields>> {
+  const payload = {
+    action: "get_event",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as GetEventResult<Fields>;
+}
+
+
+export type ValidateGetEventResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateGetEvent(
+  config: {
+  input: GetEventInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateGetEventResult> {
+  const payload = {
+    action: "get_event",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateGetEventResult;
+}
+
+
+export type CreateEventInput = {
+  title: string;
+  description?: string | null;
+  startTime: UtcDateTime;
+  endTime: UtcDateTime;
+  allDay?: boolean;
+  location?: string | null;
+  calendarId: UUID;
+  recurrenceRule?: string | null;
+  status?: "confirmed" | "tentative" | "cancelled";
+};
+
+export type CreateEventValidationErrors = {
+  title?: string[];
+  description?: string[];
+  startTime?: string[];
+  endTime?: string[];
+  allDay?: string[];
+  location?: string[];
+  calendarId?: string[];
+  recurrenceRule?: string[];
+  status?: string[];
+};
+
+export type CreateEventFields = UnifiedFieldSelection<GonguGroupsEventResourceSchema>[];
+
+type InferCreateEventResult<
+  Fields extends CreateEventFields,
+> = InferResult<GonguGroupsEventResourceSchema, Fields>;
+
+export type CreateEventResult<Fields extends CreateEventFields> = | { success: true; data: InferCreateEventResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function createEvent<Fields extends CreateEventFields>(
+  config: {
+  input: CreateEventInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<CreateEventResult<Fields>> {
+  const payload = {
+    action: "create_event",
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as CreateEventResult<Fields>;
+}
+
+
+export type ValidateCreateEventResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateCreateEvent(
+  config: {
+  input: CreateEventInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateCreateEventResult> {
+  const payload = {
+    action: "create_event",
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateCreateEventResult;
+}
+
+
+export type UpdateEventInput = {
+  title: string;
+  description?: string | null;
+  startTime: UtcDateTime;
+  endTime: UtcDateTime;
+  allDay?: boolean;
+  location?: string | null;
+  recurrenceRule?: string | null;
+  status?: "confirmed" | "tentative" | "cancelled";
+};
+
+export type UpdateEventValidationErrors = {
+  title?: string[];
+  description?: string[];
+  startTime?: string[];
+  endTime?: string[];
+  allDay?: string[];
+  location?: string[];
+  recurrenceRule?: string[];
+  status?: string[];
+};
+
+export type UpdateEventFields = UnifiedFieldSelection<GonguGroupsEventResourceSchema>[];
+
+type InferUpdateEventResult<
+  Fields extends UpdateEventFields,
+> = InferResult<GonguGroupsEventResourceSchema, Fields>;
+
+export type UpdateEventResult<Fields extends UpdateEventFields> = | { success: true; data: InferUpdateEventResult<Fields> }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function updateEvent<Fields extends UpdateEventFields>(
+  config: {
+  primaryKey: UUID;
+  input: UpdateEventInput;
+  fields: Fields;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<UpdateEventResult<Fields>> {
+  const payload = {
+    action: "update_event",
+    primaryKey: config.primaryKey,
+    input: config.input,
+    fields: config.fields
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as UpdateEventResult<Fields>;
+}
+
+
+export type ValidateUpdateEventResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateUpdateEvent(
+  config: {
+  primaryKey: string;
+  input: UpdateEventInput;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateUpdateEventResult> {
+  const payload = {
+    action: "update_event",
+    primaryKey: config.primaryKey,
+    input: config.input
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateUpdateEventResult;
+}
+
+
+
+export type DeleteEventResult = | { success: true; data: {} }
+| {
+    success: false;
+    errors: Array<{
+      type: string;
+      message: string;
+      fieldPath?: string;
+      details: Record<string, string>;
+    }>;
+  }
+;
+
+export async function deleteEvent(
+  config: {
+  primaryKey: UUID;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<DeleteEventResult> {
+  const payload = {
+    action: "delete_event",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/run", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText, details: {} }],
+    };
+  }
+
+  const result = await response.json();
+  return result as DeleteEventResult;
+}
+
+
+export type ValidateDeleteEventResult =
+  | { success: true }
+  | {
+      success: false;
+      errors: Array<{
+        type: string;
+        message: string;
+        field?: string;
+        fieldPath?: string;
+        details?: Record<string, any>;
+      }>;
+    };
+
+
+export async function validateDeleteEvent(
+  config: {
+  primaryKey: string;
+  headers?: Record<string, string>;
+  fetchOptions?: RequestInit;
+  customFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+): Promise<ValidateDeleteEventResult> {
+  const payload = {
+    action: "delete_event",
+    primaryKey: config.primaryKey
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const fetchFunction = config.customFetch || fetch;
+  const fetchOptions: RequestInit = {
+    ...config.fetchOptions,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  };
+
+  const response = await fetchFunction("/rpc/validate", fetchOptions);
+
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: [{ type: "network", message: response.statusText }],
+    };
+  }
+
+  const result = await response.json();
+  return result as ValidateDeleteEventResult;
 }
 
 

@@ -34,6 +34,14 @@ defmodule Gongu.Groups do
       rpc_action :update_calendar, :update
       rpc_action :delete_calendar, :destroy
     end
+
+    resource Gongu.Groups.Event do
+      rpc_action :list_events, :read
+      rpc_action :get_event, :get_event
+      rpc_action :create_event, :create
+      rpc_action :update_event, :update
+      rpc_action :delete_event, :destroy
+    end
   end
 
   resources do
