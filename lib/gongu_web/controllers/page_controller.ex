@@ -7,7 +7,7 @@ defmodule GonguWeb.PageController do
 
   def index(%{assigns: %{current_user: user}} = conn, _params) do
     if has_group?(user) do
-      redirect(conn, to: ~p"/budget-calendar")
+      redirect(conn, to: ~p"/groups")
     else
       redirect(conn, to: ~p"/join-with-invitation")
     end
@@ -18,10 +18,6 @@ defmodule GonguWeb.PageController do
   end
 
   def create_group(conn, _params) do
-    render(conn, :index)
-  end
-
-  def budget_calendar(conn, _params) do
     render(conn, :index)
   end
 

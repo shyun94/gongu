@@ -15,7 +15,7 @@ export const SettingsPage: React.FC = () => {
     <div className="w-full h-screen bg-white flex flex-col">
       <div className="relative flex items-center justify-center p-3 border-b border-gray-200 flex-shrink-0">
         <Link
-          to="/budget-calendar"
+          to="/groups"
           className="absolute left-3 top-1/2 -translate-y-1/2"
         >
           <button

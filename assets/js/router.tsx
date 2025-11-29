@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-router";
 import { JoinWithInvitationPage } from "./apps/(without-auth)/JoinWithInvitationPage";
 import { CreateGroupPage } from "./apps/(without-auth)/CreateGroupPage";
-import { BudgetCalendarPage } from "@/apps/(with-auth)/budget/BudgetCalendarPage";
 import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
 
 // 루트 라우트 정의
@@ -30,13 +29,6 @@ const createGroupRoute = createRoute({
   component: CreateGroupPage,
 });
 
-// Budget Calendar 라우트
-const budgetCalendarRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/budget-calendar",
-  component: BudgetCalendarPage,
-});
-
 // 설정 라우트
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -48,7 +40,6 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   joinWithInvitationRoute,
   createGroupRoute,
-  budgetCalendarRoute,
   settingsRoute,
 ]);
 

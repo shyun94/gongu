@@ -47,9 +47,6 @@ defmodule GonguWeb.Router do
     get "/create-group", PageController, :create_group
     get "/settings", PageController, :settings
 
-    # Budget Calendar 페이지 (인증 필요)
-    get "/budget-calendar", PageController, :budget_calendar
-
     # Groups 페이지 (인증 필요)
     get "/groups", PageController, :groups
 

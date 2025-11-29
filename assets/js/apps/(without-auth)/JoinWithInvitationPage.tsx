@@ -33,7 +33,7 @@ export const JoinWithInvitationPage: React.FC = () => {
 
   const joinMutation = useJoinWithInvitation({
     onSuccess: () => {
-      navigate({ to: "/budget-calendar" });
+      navigate({ to: "/groups" });
     },
     onError: (error) => {
       toast.error(error.message || "그룹 가입 중 오류가 발생했습니다.");

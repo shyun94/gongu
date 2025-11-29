@@ -34,7 +34,7 @@ export const CreateGroupPage: React.FC = () => {
 
   const createMutation = useCreateGroup({
     onSuccess: () => {
-      navigate({ to: "/budget-calendar" });
+      navigate({ to: "/groups" });
     },
     onError: (error) => {
       form.setError("root", {
