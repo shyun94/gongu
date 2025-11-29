@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { InvitationSection } from "./InvitationSection";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/_button";
 import { LogOut } from "lucide-react";
 
 export const SettingsPage: React.FC = () => {
