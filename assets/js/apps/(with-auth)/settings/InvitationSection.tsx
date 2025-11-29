@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/_button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useGroupId } from "./useGroupId";
 import { useCreateInvitation } from "./useCreateInvitation";

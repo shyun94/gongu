@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { InvitationSection } from "./InvitationSection";
-import { Button } from "@/components/ui/_button";
+import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 export const SettingsPage: React.FC = () => {
@@ -15,7 +15,7 @@ export const SettingsPage: React.FC = () => {
     <div className="w-full h-screen bg-white flex flex-col">
       <div className="relative flex items-center justify-center p-3 border-b border-gray-200 flex-shrink-0">
         <Link
-          to="/groups"
+          to="/calendar"
           className="absolute left-3 top-1/2 -translate-y-1/2"
         >
           <button

@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/_button";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -34,7 +34,7 @@ export const CreateGroupPage: React.FC = () => {
 
   const createMutation = useCreateGroup({
     onSuccess: () => {
-      navigate({ to: "/groups" });
+      navigate({ to: "/calendar" });
     },
     onError: (error) => {
       form.setError("root", {

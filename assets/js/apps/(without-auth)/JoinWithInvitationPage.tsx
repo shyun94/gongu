@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/_button";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -33,7 +33,7 @@ export const JoinWithInvitationPage: React.FC = () => {
 
   const joinMutation = useJoinWithInvitation({
     onSuccess: () => {
-      navigate({ to: "/groups" });
+      navigate({ to: "/calendar" });
     },
     onError: (error) => {
       toast.error(error.message || "그룹 가입 중 오류가 발생했습니다.");
