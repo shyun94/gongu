@@ -32,5 +32,7 @@ defmodule Gongu.Groups do
     resource Gongu.Groups.Group
     resource Gongu.Groups.GroupMembership
     resource Gongu.Groups.Invitation
+    resource Gongu.Groups.Calendar
+    resource Gongu.Groups.Event
   end
 end
