@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useListCalendars } from "./useListCalendars";
-import { useListEvents } from "./useListEvents";
-import { Button } from "@/components/ui/button";
-import { CreateEventDialog } from "./CreateEventDialog";
+import { useListCalendars } from "../useListCalendars";
+import { useListEvents } from "../useListEvents";
+import { CreateEventDialog } from "../CreateEventDialog";
 import {
   format,
   startOfMonth,
@@ -16,7 +14,7 @@ import {
   setHours,
   setMinutes,
 } from "date-fns";
-import { ko } from "date-fns/locale";
+import { CalendarHeader } from "./CalendarHeader";
 
 type Calendar = {
   id: string;
@@ -157,30 +155,11 @@ export const CalendarPage: React.FC = () => {
         event={selectedEvent}
       />
 
-      {/* 헤더 */}
-      <div className="relative flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={goToPreviousMonth}
-          aria-label="이전 달"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <h2 className="text-lg font-semibold text-gray-900">
-          {format(currentDate, "yyyy년 M월", { locale: ko })}
-        </h2>
-
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={goToNextMonth}
-          aria-label="다음 달"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+      <CalendarHeader
+        currentDate={currentDate}
+        goToPreviousMonth={goToPreviousMonth}
+        goToNextMonth={goToNextMonth}
+      />
 
       {/* 캘린더 그리드 */}
       <div className="flex-1 overflow-auto p-4">

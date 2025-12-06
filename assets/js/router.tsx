@@ -9,7 +9,7 @@ import {
 import { JoinWithInvitationPage } from "./apps/(without-auth)/JoinWithInvitationPage";
 import { CreateGroupPage } from "./apps/(without-auth)/CreateGroupPage";
 import { SettingsPage } from "@/apps/(with-auth)/settings/SettingsPage";
-import { CalendarPage } from "@/apps/(with-auth)/calendar/CalendarPage";
+import { CalendarPage } from "@/apps/(with-auth)/calendar/CalendarView/CalendarPage";
 
 // 루트 라우트 정의
 const rootRoute = createRootRoute({
