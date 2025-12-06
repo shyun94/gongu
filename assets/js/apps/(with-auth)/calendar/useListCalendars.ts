@@ -3,7 +3,7 @@ import {
   listCalendars,
   buildCSRFHeaders,
   ListCalendarsFields,
-} from "../../ash_rpc";
+} from "../../../ash_rpc";
 
 const CALENDARS_FIELDS: ListCalendarsFields = [
   "id",
@@ -57,4 +57,3 @@ export const useListCalendars = (options?: UseListCalendarsOptions) => {
     enabled: options?.enabled !== false,
   });
 };
-

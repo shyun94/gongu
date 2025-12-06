@@ -3,7 +3,7 @@ import {
   listEvents,
   buildCSRFHeaders,
   ListEventsFields,
-} from "../../ash_rpc";
+} from "../../../ash_rpc";
 
 const EVENTS_FIELDS: ListEventsFields = [
   "id",
@@ -79,4 +79,3 @@ export const useListEvents = (options?: UseListEventsOptions) => {
     enabled: options?.enabled !== false,
   });
 };
-

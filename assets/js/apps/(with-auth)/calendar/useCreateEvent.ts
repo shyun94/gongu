@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEvent, buildCSRFHeaders, CreateEventInput } from "../../ash_rpc";
+import {
+  createEvent,
+  buildCSRFHeaders,
+  CreateEventInput,
+} from "../../../ash_rpc";
 
 export const useCreateEvent = () => {
   const queryClient = useQueryClient();
